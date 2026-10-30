@@ -21,7 +21,6 @@ Tested means confirmed working in the game (Epic build 2.0.1.1).
 | Low enemy health | works (verified in game) |
 | Invisible to enemies | works (verified in game) |
 | Freeze time of day | works (verified by reading the game clock) |
-| Lights off | implemented (renderer cvar `r_disable_lights`), not yet verified |
 | Unlimited medkits and throwables, no filter drain | implemented through the game's cheat flags, not yet verified |
 
 ## Planned

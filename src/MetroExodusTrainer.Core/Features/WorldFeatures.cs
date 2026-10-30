@@ -59,19 +59,3 @@ public sealed class FreezeTimeOfDay : Feature
         return true;
     }
 }
-
-/// <summary>
-/// Turns the game's lights off through the renderer console variable r_disable_lights (0 = normal).
-/// </summary>
-public sealed class LightsOff : Feature
-{
-    public override string Name => "Lights off";
-
-    public override bool NeedsPlayer => false;
-
-    protected override void Apply(GameProcess game, nint player) => game.Write(game.Base + Offsets.World.DisableLights, 1u);
-
-    protected override void Restore(GameProcess game, nint player) => game.Write(game.Base + Offsets.World.DisableLights, 0u);
-
-    protected override void Defaults(GameProcess game, nint player) => Restore(game, player);
-}

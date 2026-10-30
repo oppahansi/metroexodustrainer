@@ -30,7 +30,6 @@ public static class Offsets
         public const nint DayCycle = 0xD200;         // igame::_day_cycle
         public const nint DayBaseMult = 0x58;        // float, game seconds per real second (12); 0 stops the clock. The float at +0x0 is recomputed every frame
         public const nint DayStart = 0x48;           // u64
-        public const nint DisableLights = 0x16502D8; // r_disable_lights value (renderer console variable, 0 = lights on)
         public const nint DayEnd = 0x50;             // u64
     }
 

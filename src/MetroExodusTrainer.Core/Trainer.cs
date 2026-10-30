@@ -18,7 +18,7 @@ public sealed class Trainer
             new InfiniteMagazine(), new NoOverheat(), new NoJam(), new NoRecoil(), new MaxAccuracy(), new RapidFire(),
         ]),
         new("Enemies", [new Invisibility(), new LowEnemyHealth()]),
-        new("World", [new FreezeTimeOfDay(), new LightsOff()]),
+        new("World", [new FreezeTimeOfDay()]),
     ];
 
     public IReadOnlyList<Feature> Features { get; }
