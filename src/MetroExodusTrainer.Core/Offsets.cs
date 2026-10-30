@@ -18,8 +18,29 @@ public static class Offsets
 
     public static class ActorFlags
     {
+        public const uint NotATarget = 0x04;
         public const uint UnlimitedItems = 0x08;
         public const uint FreeGasMask = 0x80;
+    }
+
+    /// <summary>The in-game clock (igame::day_cycle inside the game object).</summary>
+    public static class World
+    {
+        public const nint GGame = 0x1691C08;         // pointer to the game object (cgame, derives from igame)
+        public const nint DayCycle = 0xD200;         // igame::_day_cycle
+        public const nint DaySpeed = 0x0;            // float, scripted_speed::speed() = the clock speed multiplier (1.0)
+        public const nint DayStart = 0x48;           // u64
+        public const nint DayEnd = 0x50;             // u64
+    }
+
+    /// <summary>The entity list and NPC fields.</summary>
+    public static class Entities
+    {
+        public const nint GEntities = 0x1691BF0;     // pointer to entities_server
+        public const nint EntityVector = 0x10;       // entities_server::_entities (u_vector of uobject*; u16 size at +0xA)
+        public const nint Health = 0x3B8;            // centity::_health, normalized float
+        public const nint FriendType = 0x3D9;        // centity::_friend_type (efriend_type byte)
+        public const byte FriendTypeEnemy = 2;       // none 0, friend 1, enemy 2, self 3
     }
 
     /// <summary>RVA of the vtable for uobject_t&lt;player_new,0,25&gt;; used to confirm an entity is the player.</summary>
