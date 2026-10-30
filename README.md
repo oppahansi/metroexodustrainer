@@ -8,6 +8,11 @@ Fully supported: the **Epic Games Store build 2.0.1.1**. Other builds are partly
 
 ## Features
 
+![The trainer window](docs/images/trainer-window.png)
+
+The window lists the functions by category. Click a row or its switch, or use the hotkey shown on the row. The
+hotkeys are global, so they work while the game has focus.
+
 Hotkeys are on the numpad (the game uses the F keys), so **NumLock must be on**. When there are more than nine
 features, the next ones use Ctrl + Num1-Num9, then Alt + Num1-Num9.
 
