@@ -41,6 +41,24 @@ dotnet run --project src/MetroExodusTrainer.Cli    # console front-end
 Start the game and load a save (hotkeys are global, so they work while the game has focus; NumLock must be on). If the game runs
 as administrator, start the trainer as administrator too. Closing the trainer (Ctrl+C) restores the defaults.
 
+## Antivirus warnings
+
+Antivirus programs (Avast CyberCapture, Windows Defender SmartScreen and others) may flag the trainer's
+executable or block it the first time it runs. This is a **false positive**, and it happens for these reasons:
+
+- A trainer does what malware also does: it opens another process (`OpenProcess`), reads and writes its memory
+  (`ReadProcessMemory`, `WriteProcessMemory`), changes memory protection (`VirtualProtectEx`) and allocates
+  executable memory in it (`VirtualAllocEx`) for the small hooks. Scanners judge behavior, not intent.
+- The executable is new and **unsigned**. Reputation-based checks treat any unknown, unsigned program that
+  appears for the first time as suspicious until enough other users have run it. Code-signing certificates cost
+  money, so this project does not have one.
+- Every build produces a different file, so a fresh build has no reputation either.
+
+What you can do: the source is in this repository, so read it and build it yourself with the .NET SDK, then
+allow the file in your antivirus (or exclude the build folder). If a scanner flags a build, you can report it
+as a false positive to the vendor. Do not download prebuilt copies from other places. Nothing is installed, no
+network connections are made, and no game files are changed on disk.
+
 ## How it works
 
 The game ships its debug symbols (`MetroExodus.pdb`), which gives function names and exact struct layouts.
