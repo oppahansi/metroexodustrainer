@@ -30,7 +30,18 @@ public static class Npcs
         return npcs;
     }
 
-    /// <summary>True when the NPC is hostile to the player (efriend_type 2 = enemy).</summary>
-    public static bool IsEnemy(GameProcess game, nint npc) =>
-        game.TryRead<byte>(npc + Offsets.Entities.FriendType, out var type) && type == Offsets.Entities.FriendTypeEnemy;
+    /// <summary>
+    /// True when the NPC is hostile to the player, following centity::is_enemy: factions (efriend_type) are compared
+    /// with the player's; 0 is neutral, 5 is hostile to everyone, 7 depends on the group and is left alone.
+    /// </summary>
+    public static bool IsEnemy(GameProcess game, nint npc, byte playerFaction)
+    {
+        if (!game.TryRead<byte>(npc + Offsets.Entities.FriendType, out var faction))
+            return false;
+        if (faction == 0 || faction == 7 || playerFaction == 0)
+            return false;
+        if (faction == 5 || playerFaction == 5)
+            return true;
+        return faction != playerFaction || faction == 3;
+    }
 }

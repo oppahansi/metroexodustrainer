@@ -39,8 +39,7 @@ public static class Offsets
         public const nint GEntities = 0x1691BF0;     // pointer to entities_server
         public const nint EntityVector = 0x10;       // entities_server::_entities (u_vector of uobject*; u16 size at +0xA)
         public const nint Health = 0x3B8;            // centity::_health, normalized float
-        public const nint FriendType = 0x3D9;        // centity::_friend_type (efriend_type byte)
-        public const byte FriendTypeEnemy = 2;       // none 0, friend 1, enemy 2, self 3
+        public const nint FriendType = 0x3D9;        // centity::_friend_type: faction byte; the player is 2, 0 neutral, 5 hostile to all
     }
 
     /// <summary>RVA of the vtable for uobject_t&lt;player_new,0,25&gt;; used to confirm an entity is the player.</summary>

@@ -10,7 +10,7 @@ public sealed class Invisibility() : ActorFlagFeature(Offsets.ActorFlags.NotATar
 }
 
 /// <summary>
-/// Keeps hostile NPCs (friend type "enemy") at a sliver of health so any hit kills them, even a limb shot whose damage is scaled down. Allies, neutral
+/// Keeps hostile NPCs (a faction different from the player's, as the game decides it) at a sliver of health so any hit kills them, even a limb shot whose damage is scaled down. Allies, neutral
 /// animals and the player are never touched, and dead NPCs (health 0) are not revived.
 /// </summary>
 public sealed class LowEnemyHealth : Feature
@@ -33,9 +33,12 @@ public sealed class LowEnemyHealth : Feature
             return;
         _lastScan = now;
 
+        if (!game.TryRead<byte>(player + Offsets.Entities.FriendType, out var faction))
+            return;
+
         foreach (nint npc in Npcs.Find(game))
         {
-            if (!Npcs.IsEnemy(game, npc))
+            if (!Npcs.IsEnemy(game, npc, faction))
                 continue;
             if (game.TryRead<float>(npc + Offsets.Entities.Health, out var health) && health > Low && (health <= 1.5f || IsBoosted(health)))
                 game.Write(npc + Offsets.Entities.Health, Low);

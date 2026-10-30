@@ -10,11 +10,31 @@ const int DrawEveryMs = 250;
 if (args.Length > 0 && args[0] == "probe")
 {
     using var g = GameProcess.Attach() ?? throw new InvalidOperationException("game not running");
+    { nint pl = g.ReadPointer(g.ReadPointer(g.Base + Offsets.GLevel) + 0x28); Console.WriteLine($"player type={g.Read<byte>(pl + Offsets.Entities.FriendType)}"); }
     foreach (nint npc in Npcs.Find(g))
     {
         g.TryRead<float>(npc + Offsets.Entities.Health, out var hp);
         g.TryRead<byte>(npc + Offsets.Entities.FriendType, out var ft);
-        Console.WriteLine($"npc 0x{npc:X} vtbl=0x{g.ReadPointer(npc) - g.Base:X} health={hp} friend={ft}");
+        Console.WriteLine($"npc 0x{npc:X} vtbl=0x{g.ReadPointer(npc) - g.Base:X} health={hp} friend={ft} f68=0x{g.Read<uint>(npc + 0x418):X} min25c={g.Read<float>(npc + 0x60C)} imm={g.Read<byte>(npc + 0xA93):X}{g.Read<byte>(npc + 0xA94):X}");
+    }
+    return;
+}
+
+if (args.Length > 0 && args[0] == "watch")
+{
+    using var g = GameProcess.Attach() ?? throw new InvalidOperationException("game not running");
+    var last = new Dictionary<nint, float>();
+    for (int t = 0; t < 480; t++)
+    {
+        foreach (nint npc in Npcs.Find(g))
+        {
+            g.TryRead<float>(npc + Offsets.Entities.Health, out var hp);
+            g.TryRead<byte>(npc + Offsets.Entities.FriendType, out var ft);
+            if (last.TryGetValue(npc, out var old) && old != hp)
+                Console.WriteLine($"{t * 0.25:F2}s npc 0x{npc:X} health {old} -> {hp} friend={ft} vtbl=0x{g.ReadPointer(npc) - g.Base:X}");
+            last[npc] = hp;
+        }
+        Thread.Sleep(250);
     }
     return;
 }
