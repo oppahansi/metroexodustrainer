@@ -25,8 +25,18 @@ public static class Offsets
     /// <summary>RVA of cplayer::vs_actor_movement_ex_reset(owner block in rdx), which removes script speed modifiers.</summary>
     public const nint MovementExReset = 0xA4C9A0;
 
+    /// <summary>Default value of g_player_speed_scale observed in game (the engine initializer, not 1.0).</summary>
+    public const float DefaultPlayerSpeedScale = 1.25f;
+
     public static class Level
     {
+        // Per-suit parameter table that serial_update_suit copies speed and jump from.
+        public const nint SuitTable = 0x2A4E0;       // pointer to entries of SuitStride bytes
+        public const nint SuitCount = 0x2A4EA;       // u16
+        public const nint SuitStride = 0x6C;
+        public const nint SuitSpeed = 0x60;
+        public const nint SuitJump = 0x64;
+
         public const nint StartupEntity = 0x20;
         public const nint ControlEntity = 0x28;
         public const nint ViewEntity = 0x30;
@@ -61,6 +71,7 @@ public static class Offsets
         public const nint SpendFilters = 0x161A;
         public const nint MinFilterTime = 0x161C;
         public const nint StaminaFreeze = 0x2778;
+        public const nint SuitIndex = 0x27D8;        // which suit table entry applies
         public const nint BaseSpeed = 0x27E0;
         public const nint BaseJump = 0x27E4;
         public const nint Stamina = 0x2A1C;

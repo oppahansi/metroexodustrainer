@@ -18,12 +18,20 @@ public sealed class Trainer
 
     public bool PlayerFound => Player != 0;
 
-    /// <summary>Switches every feature off; each one writes back the value it found when it was enabled.</summary>
+    /// <summary>
+    /// Switches every feature off, then writes the game's real default values (even for features that were off,
+    /// which fixes values left behind by an earlier run that was closed while a feature was on).
+    /// </summary>
     public void ResetAll(GameProcess game)
     {
         foreach (var feature in Features)
             feature.Set(false);
         Tick(game);
+        foreach (var feature in Features)
+        {
+            if (PlayerFound || !feature.NeedsPlayer)
+                feature.ResetToDefaults(game, Player);
+        }
         foreach (var feature in Features)
             feature.Shutdown(game);
     }

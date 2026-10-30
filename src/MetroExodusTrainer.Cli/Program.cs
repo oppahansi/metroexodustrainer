@@ -128,6 +128,9 @@ static void Draw(GameProcess game, BuildInfo build, bool buildOk, Trainer traine
         Console.WriteLine(line.PadRight(width));
 }
 
+static string SuitJump(GameProcess game, nint player) =>
+    SuitDefaults.TryRead(game, player, out _, out var jump) ? jump.ToString("F2") : "?";
+
 static string[] Diagnostics(GameProcess game, Trainer trainer)
 {
     string speed = game.TryRead<float>(game.Base + Offsets.PlayerSpeedScale, out var sp) ? sp.ToString("F2") : "-";
@@ -143,7 +146,7 @@ static string[] Diagnostics(GameProcess game, Trainer trainer)
     [
         $"live: health={F(Offsets.Player.Health)} stamina={F(Offsets.Player.Stamina)} " +
         $"freeze={B(Offsets.Player.StaminaFreeze)} can_use={B(Offsets.Player.CanUseStamina)} " +
-        $"state={B(Offsets.Player.StaminaState)} jump={F(Offsets.Player.BaseJump)} speed_scale={speed}",
+        $"state={B(Offsets.Player.StaminaState)} jump={F(Offsets.Player.BaseJump)} (suit default {SuitJump(game, p)}) speed_scale={speed}",
         $"move: speed={F(Offsets.Player.MoveSpeed)} flags={state} tired={B(Offsets.Player.TiredForSprint)} " +
         $"damaged={B(Offsets.Player.DamagedForSprint)} blend={F(Offsets.Player.VsSpeedBlend)}",
         $"vs_speed walk/run/sprint/crouch={Quad(Offsets.Player.VsSpeed)}  target={Quad(Offsets.Player.VsSpeedTarget)}  " +

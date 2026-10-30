@@ -24,6 +24,11 @@ public abstract class Feature
     private bool _needsEnable;
     private bool _needsRestore;
 
+    /// <summary>Writes the game's real default values, whether or not this feature is switched on.</summary>
+    internal void ResetToDefaults(GameProcess game, nint player) => Defaults(game, player);
+
+    protected virtual void Defaults(GameProcess game, nint player) { }
+
     /// <summary>Last chance to undo changes that are not tied to the player entity, e.g. code patches.</summary>
     internal void Shutdown(GameProcess game) => OnShutdown(game);
 

@@ -27,6 +27,12 @@ public sealed class Invulnerability : Feature
         game.SetBit(player + Offsets.Player.Invulnerable, Offsets.Player.InvulnerableBit, _origInvulnerable);
         game.SetBit(player + Offsets.Player.Immortal, Offsets.Player.ImmortalBit, _origImmortal);
     }
+
+    protected override void Defaults(GameProcess game, nint player)
+    {
+        game.SetBit(player + Offsets.Player.Invulnerable, Offsets.Player.InvulnerableBit, false);
+        game.SetBit(player + Offsets.Player.Immortal, Offsets.Player.ImmortalBit, false);
+    }
 }
 
 /// <summary>
@@ -152,6 +158,9 @@ public sealed class InfiniteStamina : Feature
         Warning = null;
     }
 
+    protected override void Defaults(GameProcess game, nint player) =>
+        game.Write<byte>(player + Offsets.Player.StaminaFreeze, 0);
+
     protected override void OnShutdown(GameProcess game)
     {
         _sprintAllowedPatch.Revert(game);
@@ -159,35 +168,22 @@ public sealed class InfiniteStamina : Feature
     }
 }
 
-/// <summary>Writes a float field every tick and restores the value it found when switched on.</summary>
-public abstract class FloatOverride(nint offset, float value) : Feature
-{
-    private float _original = 1f;
-
-    protected override void OnEnable(GameProcess game, nint player)
-    {
-        if (game.TryRead<float>(player + offset, out var current))
-            _original = current;
-    }
-
-    protected override void Apply(GameProcess game, nint player) => game.Write(player + offset, value);
-
-    protected override void Restore(GameProcess game, nint player) => game.Write(player + offset, _original);
-}
-
-/// <summary>Scales movement speed through the engine's g_player_speed_scale variable (1.0 is normal).</summary>
+/// <summary>Scales movement speed through the engine's g_player_speed_scale variable (default 1.25).</summary>
 public sealed class FastMovement : Feature
 {
     private const float Speed = 1.75f;
-    private float _original = 1f;
+    private float _original = Offsets.DefaultPlayerSpeedScale;
 
     public override string Name => "Fast movement";
     public override bool NeedsPlayer => false;
 
     protected override void OnEnable(GameProcess game, nint player)
     {
-        if (game.TryRead<float>(game.Base + Offsets.PlayerSpeedScale, out var current))
-            _original = current;
+        // A value equal to our own override means an earlier run left it behind; use the real default then.
+        _original = game.TryRead<float>(game.Base + Offsets.PlayerSpeedScale, out var current) &&
+                    Math.Abs(current - Speed) > 0.001f
+            ? current
+            : Offsets.DefaultPlayerSpeedScale;
     }
 
     protected override void Apply(GameProcess game, nint player) =>
@@ -195,10 +191,26 @@ public sealed class FastMovement : Feature
 
     protected override void Restore(GameProcess game, nint player) =>
         game.Write(game.Base + Offsets.PlayerSpeedScale, _original);
+
+    protected override void Defaults(GameProcess game, nint player) =>
+        game.Write(game.Base + Offsets.PlayerSpeedScale, Offsets.DefaultPlayerSpeedScale);
 }
 
-/// <summary>Jump height multiplier (1.0 is normal).</summary>
-public sealed class HighJump() : FloatOverride(Offsets.Player.BaseJump, 2.25f)
+/// <summary>Jump height multiplier. The real default comes from the per-suit table, not from memory at switch-on.</summary>
+public sealed class HighJump : Feature
 {
+    private const float Jump = 2.25f;
+
     public override string Name => "High jump";
+
+    protected override void Apply(GameProcess game, nint player) =>
+        game.Write(player + Offsets.Player.BaseJump, Jump);
+
+    protected override void Restore(GameProcess game, nint player) => Defaults(game, player);
+
+    protected override void Defaults(GameProcess game, nint player)
+    {
+        float jump = SuitDefaults.TryRead(game, player, out _, out var suitJump) && suitJump > 0f ? suitJump : 1f;
+        game.Write(player + Offsets.Player.BaseJump, jump);
+    }
 }
