@@ -51,6 +51,23 @@ if (args.Length > 0 && args[0] == "clock")
     return;
 }
 
+if (args.Length > 2 && args[0] == "peek")
+{
+    using var g = GameProcess.Attach() ?? throw new InvalidOperationException("game not running");
+    foreach (var a in args[1..])
+    {
+        var b = g.ReadBytes(g.Base + (nint)Convert.ToInt64(a, 16), 64);
+        Console.WriteLine($"{a}: {(b is null ? "?" : BitConverter.ToString(b))}  float={(b is null ? 0 : BitConverter.ToSingle(b, 0))}");
+        if (b is not null)
+        {
+            nint v = (nint)BitConverter.ToInt64(b, 24);
+            var vb = g.ReadBytes(v, 32);
+            Console.WriteLine($"   -> value at rva 0x{v - g.Base:X}: {(vb is null ? "?" : BitConverter.ToString(vb))}");
+        }
+    }
+    return;
+}
+
 var trainer = new Trainer();
 var featureKeys = Enumerable.Range(0, trainer.Features.Count).Select(Hotkeys.ForFeature).ToArray();
 var featureDown = new bool[featureKeys.Length];

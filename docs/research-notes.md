@@ -140,6 +140,9 @@ All fields are on the `weapon_magazined`-derived entity found through the invent
   `+0x58` (game seconds per real second, 12 here); writing 0 stops it and the game leaves it alone. The float at `+0x0` is
   recomputed every frame, so writing it does nothing. Day start/end are u64 at `+0x48`/`+0x50`; `+0x38` is the game time.
 
+- **Lights:** renderer console variables are objects (vtable, name, ...) whose value sits at object `+0x28`. `r_disable_lights`
+  is at RVA `0x16502D8` (0 = normal). Others: `r_game_light_scale` float at `0x164DB90` (1.0), `r_disable_indirect_lighting` at `0x164E288`.
+
 ### Defaults and reset (Num0)
 Values captured when a feature is switched on can be stale if an earlier run was closed with the feature on.
 Num0 therefore writes real defaults, whether or not the feature is on:
