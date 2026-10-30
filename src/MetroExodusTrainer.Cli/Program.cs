@@ -149,6 +149,32 @@ if (args.Length > 0 && args[0] == "swaytest")
     return;
 }
 
+if (args.Length > 0 && args[0] == "inv")
+{
+    using var g = GameProcess.Attach() ?? throw new InvalidOperationException("game not running");
+    nint pl = g.ReadPointer(g.ReadPointer(g.Base + Offsets.GLevel) + 0x28);
+    nint inventory = g.ReadPointer(pl + Offsets.Player.Inventory);
+    nint array = g.ReadPointer(inventory + Offsets.Inventory.AllItems);
+    ushort count = g.Read<ushort>(inventory + Offsets.Inventory.AllItems + 10);
+    nint level = g.ReadPointer(g.Base + Offsets.GLevel);
+    uint tier = g.Read<uint>(pl + Offsets.Player.LimitTier);
+    nint table = g.ReadPointer(level + Offsets.Level.LimitTable);
+    nint limits = g.ReadPointer(table + (nint)tier * Offsets.Level.LimitEntryStride + Offsets.Level.LimitByAmmoKey);
+    for (int i = 0; i < count; i++)
+    {
+        nint item = g.ReadPointer(array + i * 8);
+        nint e = item - Offsets.Inventory.ItemOffsetInEntity;
+        long vt = g.ReadPointer(e) - g.Base;
+        nint prm = g.ReadPointer(e + Offsets.Inventory.EntityStaticParams);
+        byte craft = prm == 0 ? (byte)0xFF : g.Read<byte>(prm - Offsets.Inventory.CraftResBias);
+        uint key = prm == 0 ? 0xFFFF : g.Read<uint>(prm - Offsets.Inventory.AmmoKeyBias);
+        bool ammo = MetroExodusTrainer.Core.Generated.AmmoItemVtables.Rvas.Contains(vt);
+        string lim = ammo && key < 64 ? g.Read<uint>(limits + (nint)key * 4).ToString() : "-";
+        Console.WriteLine($"{i,3} vt=0x{vt:X} ammoClass={ammo} craft={craft} key={key} units={(ammo ? g.Read<ushort>(e + Offsets.Inventory.AmmoBoxValue) : -1)} limit={lim}");
+    }
+    return;
+}
+
 var trainer = new Trainer();
 var featureKeys = Enumerable.Range(0, trainer.Features.Count).Select(Hotkeys.ForFeature).ToArray();
 var featureDown = new bool[featureKeys.Length];

@@ -18,6 +18,7 @@ Tested means confirmed working in the game (Epic build 2.0.1.1).
 | No recoil | tested (code patch) |
 | Maximum accuracy | tested (code patch) |
 | Rapid fire | tested (hook) |
+| Unlimited crafting resources (stacks the game marks as craft resources, kept at 999) | implemented, not yet verified |
 | Weapons never get dirty | implemented (dirt half-float at weapon +0xB0), not yet verified |
 | Low enemy health | works (verified in game) |
 | Invisible to enemies | works (verified in game) |
@@ -31,8 +32,7 @@ Tested means confirmed working in the game (Epic build 2.0.1.1).
 Most of these need the inventory and weapon structures located first (see open questions in
 [research-notes.md](research-notes.md)).
 
-- Consumables: filters, materials, chemicals; verify medkits, throwing knives, hand grenades, decoys and
-  Molotov cocktails
+- Consumables: filters; verify throwing knives, hand grenades, decoys and Molotov cocktails
 - Gas mask: durability, filter time, play without gas mask
 - Batteries and devices: flashlight and night vision charge, "Hellbreath" charge, air bottle pressure
 - Enemies and world: freeze enemies, no clip (still need research)

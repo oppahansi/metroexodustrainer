@@ -12,7 +12,7 @@ public sealed class Trainer
     public IReadOnlyList<FeatureGroup> Groups { get; } =
     [
         new("Player", [new Invulnerability(), new InfiniteStamina(), new FastMovement(), new HighJump()]),
-        new("Items", [new UnlimitedItems(), new FreeGasMask()]),
+        new("Items", [new UnlimitedItems(), new FreeGasMask(), new InfiniteCraftResources()]),
         new("Weapons",
         [
             new InfiniteMagazine(), new NoOverheat(), new NoJam(), new NoRecoil(), new MaxAccuracy(), new RapidFire(),
