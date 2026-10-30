@@ -47,14 +47,20 @@ public static class Offsets
         public const nint ItemOffsetInEntity = 0x620; // inventory_item subobject follows the 0x620-byte centity
         public const nint WeaponAmmoLoaded = 0x1940; // weapon_magazined::_ammo_loaded (u32)
         public const nint AmmoBoxValue = 0x690;      // weapon_ammo units = reserve rounds of that ammo type (u16)
-        public const nint StaticParamsPtr = 0x678;   // inventory_item::_current_static_params
-        public const nint StaticSlotMax = 4;         // slot_max_num (u32) inside inventory_item::static_params
+        public const nint EntityStaticParams = 0x240; // pointer into the entity's static params block
+        public const nint AmmoKeyBias = 0x2F8;       // ammo type key (u32) = *(params - 0x2F8)
+        public const nint CraftResBias = 0x2EC;      // is_craft_res (byte) = *(params - 0x2EC); materials/chemicals
         public const nint MedkitCount = 0x9D0;       // decremented by medkit::apply_medkit (u32)
         public const nint MissileUnits = 0x190;      // missile_weapon units (u16), decremented by throw_me
     }
 
     public static class Level
     {
+        // Per-tier carry limits: entry = *(level + LimitTable) + tier * LimitEntryStride; max for an ammo key =
+        // u32 at *(entry + LimitByAmmoKey) + key * 4. 0xFFFFFFFF means no limit.
+        public const nint LimitTable = 0x2A580;
+        public const nint LimitEntryStride = 0x130;
+        public const nint LimitByAmmoKey = 0x70;
         // Per-suit parameter table that serial_update_suit copies speed and jump from.
         public const nint SuitTable = 0x2A4E0;       // pointer to entries of SuitStride bytes
         public const nint SuitCount = 0x2A4EA;       // u16
@@ -97,6 +103,7 @@ public static class Offsets
         public const nint SpendFilters = 0x161A;
         public const nint MinFilterTime = 0x161C;
         public const nint StaminaFreeze = 0x2778;
+        public const nint LimitTier = 0x2A40;        // index into the level's carry-limit table
         public const nint SuitIndex = 0x27D8;        // which suit table entry applies
         public const nint BaseSpeed = 0x27E0;
         public const nint BaseJump = 0x27E4;

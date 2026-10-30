@@ -47,11 +47,22 @@ public sealed class UnlimitedItems() : ActorFlagFeature(Offsets.ActorFlags.Unlim
         FillReserveAmmo(game, player);
     }
 
+    private const uint MaxPlausibleLimit = 999;
+
+    /// <summary>Raises every ammo stack to the player's current carry limit for that ammo type. Crafting resources are left alone.</summary>
     private static void FillReserveAmmo(GameProcess game, nint player)
     {
         nint inventory = game.ReadPointer(player + Offsets.Player.Inventory);
         nint array = inventory == 0 ? 0 : game.ReadPointer(inventory + Offsets.Inventory.AllItems);
-        if (array == 0 || !game.TryRead<ushort>(inventory + Offsets.Inventory.AllItems + 10, out var count))
+        nint level = game.ReadPointer(game.Base + Offsets.GLevel);
+        if (array == 0 || level == 0 ||
+            !game.TryRead<ushort>(inventory + Offsets.Inventory.AllItems + 10, out var count) ||
+            !game.TryRead<uint>(player + Offsets.Player.LimitTier, out var tier) || tier > 255)
+            return;
+
+        nint table = game.ReadPointer(level + Offsets.Level.LimitTable);
+        nint limits = table == 0 ? 0 : game.ReadPointer(table + (nint)tier * Offsets.Level.LimitEntryStride + Offsets.Level.LimitByAmmoKey);
+        if (limits == 0)
             return;
 
         for (int i = 0; i < count; i++)
@@ -64,13 +75,15 @@ public sealed class UnlimitedItems() : ActorFlagFeature(Offsets.ActorFlags.Unlim
             if (!AmmoItemVtables.Rvas.Contains(game.ReadPointer(ammo) - game.Base))
                 continue;
 
-            nint parameters = game.ReadPointer(ammo + Offsets.Inventory.StaticParamsPtr);
+            nint parameters = game.ReadPointer(ammo + Offsets.Inventory.EntityStaticParams);
             if (parameters == 0 ||
-                !game.TryRead<uint>(parameters + Offsets.Inventory.StaticSlotMax, out var max) || max is 0 or > 9999 ||
+                !game.TryRead<byte>(parameters - Offsets.Inventory.CraftResBias, out var craftResource) || craftResource != 0 ||
+                !game.TryRead<uint>(parameters - Offsets.Inventory.AmmoKeyBias, out var key) || key >= 64 ||
+                !game.TryRead<uint>(limits + (nint)key * 4, out var max) || max is 0 or > MaxPlausibleLimit ||
                 !game.TryRead<ushort>(ammo + Offsets.Inventory.AmmoBoxValue, out var units))
                 continue;
 
-            // Only ever raises the stack, so a wrong maximum cannot take ammo away.
+            // Only ever raises the stack, so a wrong limit cannot take ammo away.
             if (units < max)
                 game.Write(ammo + Offsets.Inventory.AmmoBoxValue, (ushort)max);
         }

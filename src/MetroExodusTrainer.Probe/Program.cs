@@ -65,10 +65,11 @@ static int InventoryDump(GameProcess game)
                 string name = ShortName(names.Resolve(vtable - game.Base));
                 if (name == "weapon_ammo")
                 {
-                    nint prm = game.ReadPointer(entity + Offsets.Inventory.StaticParamsPtr);
-                    string slotMax = prm != 0 && game.TryRead<uint>(prm + Offsets.Inventory.StaticSlotMax, out var sm) ? sm.ToString() : "-";
+                    nint prm = game.ReadPointer(entity + Offsets.Inventory.EntityStaticParams);
+                    string key = prm != 0 && game.TryRead<uint>(prm - Offsets.Inventory.AmmoKeyBias, out var k) ? k.ToString() : "-";
+                    string craft = prm != 0 && game.TryRead<byte>(prm - Offsets.Inventory.CraftResBias, out var cr) ? cr.ToString() : "-";
                     string units = game.TryRead<ushort>(entity + Offsets.Inventory.AmmoBoxValue, out var un) ? un.ToString() : "-";
-                    lines.Add($"  ammo 0x{entity:X}  units={units,-5} slot_max={slotMax}");
+                    lines.Add($"  ammo key={key,-3} craft={craft} units={units}");
                     continue;
                 }
                 if (!interesting.Any(name.StartsWith))
