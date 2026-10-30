@@ -124,6 +124,31 @@ if (args.Length > 0 && args[0] == "sway")
     return;
 }
 
+if (args.Length > 0 && args[0] == "swaytest")
+{
+    // swaytest set <hex offset> <value>  |  swaytest reset
+    using var g = GameProcess.Attach() ?? throw new InvalidOperationException("game not running");
+    nint pl = g.ReadPointer(g.ReadPointer(g.Base + Offsets.GLevel) + 0x28);
+    float[] defaults = [0.7f, 0.3f, 1.5f, 1f, 0.004f];
+    foreach (nint w in Firearms.Find(g, pl))
+    {
+        nint b = g.ReadPointer(w + 0x240) - 0x5C;
+        if (args[1] == "reset")
+        {
+            for (int i = 0; i < defaults.Length; i++) g.Write(b + 0x1210 + i * 4, defaults[i]);
+            Console.WriteLine($"gun 0x{w:X}: reset");
+        }
+        else
+        {
+            nint off = (nint)Convert.ToInt64(args[2], 16);
+            float v = float.Parse(args[3], System.Globalization.CultureInfo.InvariantCulture);
+            Console.WriteLine($"gun 0x{w:X}: +0x{off:X} {g.Read<float>(b + off)} -> {v}");
+            g.Write(b + off, v);
+        }
+    }
+    return;
+}
+
 var trainer = new Trainer();
 var featureKeys = Enumerable.Range(0, trainer.Features.Count).Select(Hotkeys.ForFeature).ToArray();
 var featureDown = new bool[featureKeys.Length];

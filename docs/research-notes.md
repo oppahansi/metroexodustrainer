@@ -155,6 +155,11 @@ All fields are on the `weapon_magazined`-derived entity found through the invent
 - **Weapon dirt:** `weapon_magazined` keeps a half-float at `+0xB0` (0 clean, 1 filthy); `apply_dirt_modifiers` scales accuracy/jam
   values by it and the workbench repair lowers it. Writing 0 sticks while idle.
 
+- **Weapon sway (no feature yet):** `sway_item_data` holds five floats (crouch, aim, one-hand, increase, stabilize-speed coefficients;
+  0.7 / 0.3 / 1.5 / 1.0 / 0.004 in the weapon's static params at +0x1210). Zeroing aim and increase did not remove the aimed wobble,
+  and zeroing stabilize-speed makes the weapon drift off its aim position. The wobble comes from elsewhere (idle animation or
+  sight data).
+
 ### Defaults and reset (Num0)
 Values captured when a feature is switched on can be stale if an earlier run was closed with the feature on.
 Num0 therefore writes real defaults, whether or not the feature is on:

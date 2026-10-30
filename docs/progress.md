@@ -35,7 +35,6 @@ Most of these need the inventory and weapon structures located first (see open q
   Molotov cocktails
 - Gas mask: durability, filter time, play without gas mask
 - Batteries and devices: flashlight and night vision charge, "Hellbreath" charge, air bottle pressure
-- Weapons: no scope sway (sway parameters found in the weapon's static params, meaning of each still unknown)
 - Enemies and world: freeze enemies, no clip (still need research)
 
 ## Infrastructure
