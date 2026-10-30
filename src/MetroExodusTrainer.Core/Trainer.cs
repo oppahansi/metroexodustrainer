@@ -14,6 +14,11 @@ public sealed class Trainer
         new UnlimitedItems(),
         new FreeGasMask(),
         new InfiniteMagazine(),
+        new NoOverheat(),
+        new NoJam(),
+        new NoRecoil(),
+        new MaxAccuracy(),
+        new RapidFire(),
     ];
 
     /// <summary>Address of the player found by the last tick, or 0.</summary>

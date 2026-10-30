@@ -54,6 +54,20 @@ public static class Offsets
         public const nint MissileUnits = 0x190;      // missile_weapon units (u16), decremented by throw_me
     }
 
+    /// <summary>Fields of weapon_magazined-derived firearms (offsets from the weapon entity).</summary>
+    public static class Weapon
+    {
+        public const nint CurrentDispersion = 0x9E0; // float, spread added by movement and firing
+        public const nint ShotInterval = 0xA64;      // float seconds between shots
+        public const nint RecoilLevel = 0x1970;      // float
+        public const nint RecoilVertical = 0x1974;   // float
+        public const nint RecoilHorizontal = 0x1978; // float
+        public const nint RecoilShake = 0x197C;      // float
+        public const nint RecoilHorizRandom = 0x198C; // float
+        public const nint Heat = 0x1990;             // float 0..1, overheats at the weapon's critical heat
+        public const nint JamState = 0x19A0;         // e_jam byte, 0 = not jammed
+    }
+
     public static class Level
     {
         // Per-tier carry limits: entry = *(level + LimitTable) + tier * LimitEntryStride; max for an ammo key =
