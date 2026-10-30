@@ -57,6 +57,9 @@ public static class Offsets
     /// <summary>Fields of weapon_magazined-derived firearms (offsets from the weapon entity).</summary>
     public static class Weapon
     {
+        /// <summary>RVA of weapon_magazined::recoil_curve_evaluate, which turns the recoil level into kick.</summary>
+        public const nint RecoilCurveEvaluate = 0x8F2F90;
+
         public const nint CurrentDispersion = 0x9E0; // float, spread added by movement and firing
         public const nint ShotInterval = 0xA64;      // float seconds between shots
         public const nint RecoilLevel = 0x1970;      // float

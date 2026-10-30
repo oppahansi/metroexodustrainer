@@ -30,10 +30,30 @@ public sealed class NoJam : WeaponFieldFeature
         game.Write<byte>(weapon + Offsets.Weapon.JamState, 0);
 }
 
-/// <summary>Clears the recoil accumulators so a shot does not kick the aim.</summary>
+/// <summary>
+/// Removes weapon recoil. <c>recoil_curve_evaluate</c> is the one function that turns the recoil level into the
+/// vertical, horizontal and shake kick, so it is patched to return 0 (<c>xorps xmm0,xmm0; ret</c>). Writing the
+/// fields from outside is too slow: the game recomputes them every frame.
+/// </summary>
 public sealed class NoRecoil : WeaponFieldFeature
 {
+    private readonly CodePatch _curvePatch = new(
+        "recoil curve", Offsets.Weapon.RecoilCurveEvaluate,
+        expected: [0x48, 0x89, 0x5C, 0x24, 0x08],
+        replacement: [0x0F, 0x57, 0xC0, 0xC3, 0x90]);
+
     public override string Name => "No recoil";
+
+    protected override void OnEnable(GameProcess game, nint player) =>
+        Warning = _curvePatch.TryApply(game) ? null : _curvePatch.Error;
+
+    protected override void Restore(GameProcess game, nint player)
+    {
+        _curvePatch.Revert(game);
+        Warning = null;
+    }
+
+    protected override void OnShutdown(GameProcess game) => _curvePatch.Revert(game);
 
     protected override void ApplyTo(GameProcess game, nint weapon)
     {
