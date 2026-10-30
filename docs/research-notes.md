@@ -78,9 +78,45 @@ Stamina is not what ends a long sprint. Three separate things have to be handled
 
 Side effect: while this feature is on, scripted "no sprint" sections no longer block sprinting.
 
-### Defaults and reset (F12)
+### Developer cheat flags (`ps_actor_flags`)
+A u32 at RVA `0x15A8824` that game code tests directly, so no code needs patching. Bits used:
+
+| Bit | Mask | Effect (confirmed in the code that tests it) |
+|---|---|---|
+| 3 | `0x08` | `weapon_magazined::unlimited_ammo` returns true (reloading no longer needs reserve ammo), `medkit::apply_medkit` skips decrementing the medkit count, `missile_weapon::throw_me` skips decrementing the stack |
+| 7 | `0x80` | `gasmask::update_state` skips the filter-time check, the suffocation trigger and filter spending |
+
+Other bits seen: bit 0 god mode (`cplayer::can_be_killed`), bit 1 NPC immortality, bit 4 `base_npc::hit`.
+Verified in game: bit 3 makes reloading work with zero reserve ammo. It does **not** stop the magazine from
+emptying while shooting.
+
+### Inventory
+- The player's inventory object is at `player + 0x10F0` (a pointer). Its `_all` vector (`inventory_player + 0x278`,
+  array pointer +0, u16 size at +0xA) holds `inventory_item*`.
+- Each item pointer is the `inventory_item` subobject; the entity starts at `item - 0x620`. The entity's first
+  qword is its vtable, which identifies the class.
+- Class recognition uses vtable RVAs generated from the symbols by `tools/gen_weapon_vtables.py`
+  (`src/MetroExodusTrainer.Core/Generated/`): firearms that derive from `weapon_magazined`, and `weapon_ammo` items.
+
+### Infinite magazine
+For a `weapon_magazined`-derived entity the live loaded-ammo counter is the u32 at `entity + 0x1940`
+(`_ammo_loaded`); it drops by one per shot and a reload raises it to the magazine capacity. Keeping each weapon's
+counter at the highest value it has shown stops the magazine from emptying. Only objects whose vtable belongs to
+a `weapon_magazined` class are ever written to.
+
+### Reserve ammo
+- Each ammo type is a `weapon_ammo` item; its reserve rounds are the u16 `units` at `entity + 0x690`
+  (`weapon_ammo::units`, `inventory_item + 0x70`).
+- The ammo type key is the u32 at `*(entity + 0x240) - 0x2F8`; the byte at `*(entity + 0x240) - 0x2EC` is
+  `is_craft_res` (materials and chemicals use the same item class and must be skipped).
+- The static data's own `slot_max_num` is a placeholder (99999). The real carry limit is
+  `u32 at (*(*(g_level + 0x2A580) + tier * 0x130 + 0x70)) + key * 4`, where `tier = u32 at player + 0x2A40`.
+  `0` and `0xFFFFFFFF` mean no usable limit.
+- With unlimited ammo on, every non-crafting ammo stack is raised to that limit (never lowered).
+
+### Defaults and reset (Num0)
 Values captured when a feature is switched on can be stale if an earlier run was closed with the feature on.
-F12 therefore writes real defaults, whether or not the feature is on:
+Num0 therefore writes real defaults, whether or not the feature is on:
 
 - Jump: from the per-suit table, `*(g_level + 0x2A4E0) + suit_index * 0x6C + 0x64`
   (count at `g_level + 0x2A4EA`; speed is at `+0x60`). `serial_update_suit` (RVA `0xA4F2B0`) copies these.
@@ -99,6 +135,6 @@ F12 therefore writes real defaults, whether or not the feature is on:
 | `centity::gain_health` | `0x84A520` |
 
 ## Open questions
-- Where inventory counts (medkits, filters, grenades, ammo) live; they are not plain entity fields.
+- Where the medkit, filter and throwable counts live (unlimited medkits and throwables rely on the cheat flag and are not yet verified in game).
 - Weapon state (recoil, spread, overheat, jam, dirt) in `weapon_magazined` / `weapon_pneumo`.
 - Signature scanning to support more than build 2.0.1.1 (Steam, GOG, older Enhanced builds).

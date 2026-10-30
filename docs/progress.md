@@ -12,7 +12,7 @@ Tested means confirmed working in the game (Epic build 2.0.1.1).
 | Fast movement | tested |
 | High jump | tested |
 | Reset to defaults (Num0, also on exit) | tested |
-| Unlimited reserve ammo (reloads with no reserve work) | tested |
+| Unlimited reserve ammo (reloads work, stacks filled to the real carry limit) | tested |
 | Infinite magazine (16 firearms) | tested |
 | Unlimited medkits and throwables, no filter drain | implemented through the game's cheat flags, not yet verified |
 

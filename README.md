@@ -17,7 +17,7 @@ features, the next ones use Shift + Num1-Num9.
 | Num2 | Infinite stamina (no sprint exhaustion) | working |
 | Num3 | Fast movement | working |
 | Num4 | High jump | working |
-| Num5 | Unlimited reserve ammo, medkits and throwables | ammo/reloads working; medkits and throwables untested |
+| Num5 | Unlimited reserve ammo (reloads work, stacks filled to the carry limit), medkits and throwables | ammo working; medkits and throwables untested |
 | Num6 | No filter drain / suffocation | untested |
 | Num7 | Infinite magazine (shoot without reloading) | working |
 | Num0 | Reset everything to the game's default values | working |
