@@ -10,12 +10,12 @@ public sealed class Invisibility() : ActorFlagFeature(Offsets.ActorFlags.NotATar
 }
 
 /// <summary>
-/// Keeps hostile NPCs (friend type "enemy") at a few percent health so any hit kills them. Allies, neutral
+/// Keeps hostile NPCs (friend type "enemy") at a sliver of health so any hit kills them, even a limb shot whose damage is scaled down. Allies, neutral
 /// animals and the player are never touched, and dead NPCs (health 0) are not revived.
 /// </summary>
 public sealed class LowEnemyHealth : Feature
 {
-    private const float Low = 0.05f;
+    private const float Low = 0.001f;
 
     public override string Name => "Low enemy health";
 

@@ -7,6 +7,18 @@ using MetroExodusTrainer.Core;
 const int TickMs = 10;
 const int DrawEveryMs = 250;
 
+if (args.Length > 0 && args[0] == "probe")
+{
+    using var g = GameProcess.Attach() ?? throw new InvalidOperationException("game not running");
+    foreach (nint npc in Npcs.Find(g))
+    {
+        g.TryRead<float>(npc + Offsets.Entities.Health, out var hp);
+        g.TryRead<byte>(npc + Offsets.Entities.FriendType, out var ft);
+        Console.WriteLine($"npc 0x{npc:X} vtbl=0x{g.ReadPointer(npc) - g.Base:X} health={hp} friend={ft}");
+    }
+    return;
+}
+
 var trainer = new Trainer();
 var featureKeys = Enumerable.Range(0, trainer.Features.Count).Select(Hotkeys.ForFeature).ToArray();
 var featureDown = new bool[featureKeys.Length];
