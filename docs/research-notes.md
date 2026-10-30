@@ -54,3 +54,8 @@ Siblings: `_startup_entity` +0x20, `_view_entity` +0x30.
 - `cplayer::movement_speed_base` (RVA `0x817e50`) multiplies in the float at RVA `0x163dce8`, the value inside `g_player_speed_scale`. The trainer writes that for fast movement.
 - `_vs_speed` (+0x24f0: walk, run, sprint, crouch, jump, accel, brake) holds script-driven speed multipliers (1.0 default).
 - `cplayer::update_stamina` (RVA `0x818680`) takes its regeneration path whenever `_vs_stamina_freeze` (+0x2778) is non-zero, so the flag stops sprint drain.
+
+## Stamina and exhaustion (from `use_stamina`, RVA `0x8184f0`)
+- `_stamina_state` (+0x2a20): 0 idle, 1 recovering, 2 in use.
+- `use_stamina` subtracts the cost, clamps to 0..1, sets state 2, and when stamina drops below the static-params threshold clears `_can_use_stamina` (+0x2a21) and queues `do_restore_stamina_use` (RVA `0x8184c0`), which sets it back to 1.
+- `can_sprint` (RVA `0x8d0280`) and `can_jump` require `_can_use_stamina` set and `_stamina` >= the minimum, so exhaustion = `_can_use_stamina == 0`.

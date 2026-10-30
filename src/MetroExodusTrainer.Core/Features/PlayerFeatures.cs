@@ -30,8 +30,9 @@ public sealed class Invulnerability : Feature
 }
 
 /// <summary>
-/// Freezes stamina drain (update_stamina takes its regeneration path while the freeze flag is set)
-/// tops the value up every tick to cover jump costs, and clears the "exhausted" state.
+/// Stops stamina drain and exhaustion. The freeze flag makes update_stamina take its regeneration path,
+/// stamina is topped up every tick to cover jump costs, and the "can use stamina" flag (which use_stamina
+/// clears when exhausted, blocking fast running and jumping until a timer fires) is kept set.
 /// </summary>
 public sealed class InfiniteStamina : Feature
 {
@@ -46,7 +47,7 @@ public sealed class InfiniteStamina : Feature
     {
         game.Write<byte>(player + Offsets.Player.StaminaFreeze, 1);
         game.Write(player + Offsets.Player.Stamina, 1f);
-        game.Write<byte>(player + Offsets.Player.StaminaState, 0); // never stay "exhausted"
+        game.Write<byte>(player + Offsets.Player.CanUseStamina, 1);
     }
 
     protected override void Restore(GameProcess game, nint player) =>

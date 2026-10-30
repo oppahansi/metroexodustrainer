@@ -4,7 +4,7 @@ using MetroExodusTrainer.Core;
 // Console trainer. Hotkeys are global, so they work while the game window has focus.
 // Start the game (or the trainer) first; the trainer waits for the game and re-attaches if it restarts.
 
-const int TickMs = 20;
+const int TickMs = 10;
 const int DrawEveryMs = 250;
 const int ResetKey = 0x7B; // F12
 int[] featureKeys = [0x70, 0x71, 0x72, 0x73]; // F1..F4
@@ -20,6 +20,9 @@ Console.CancelKeyPress += (_, e) =>
     RestoreAndExit();
 };
 AppDomain.CurrentDomain.ProcessExit += (_, _) => RestoreDefaults();
+
+// Windows sleeps in ~15 ms steps by default; ask for 1 ms so ticks keep up with the game's frame rate.
+timeBeginPeriod(1);
 
 Console.CursorVisible = false;
 while (true)
@@ -135,4 +138,7 @@ partial class Program
 {
     [DllImport("user32.dll")]
     static extern short GetAsyncKeyState(int vKey);
+
+    [DllImport("winmm.dll")]
+    static extern uint timeBeginPeriod(uint period);
 }
