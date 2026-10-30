@@ -39,7 +39,8 @@ public sealed class FreezeTimeOfDay : Feature
 
     protected override void Defaults(GameProcess game, nint player)
     {
-        if (TryAddress(game, out var speedAddress))
+        // Only a frozen clock is ours to fix; any other value is the game's own and stays.
+        if (TryAddress(game, out var speedAddress) && game.TryRead<float>(speedAddress, out var speed) && speed == 0f)
             game.Write(speedAddress, DefaultSpeed);
     }
 

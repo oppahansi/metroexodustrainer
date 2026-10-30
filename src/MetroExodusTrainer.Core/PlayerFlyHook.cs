@@ -135,6 +135,8 @@ public sealed class PlayerFlyHook
     {
         if (_installed)
             game.WriteCode(game.Base + Offsets.Fly.MoveByVelEx, Original);
+        else
+            Detour.RemoveLeftover(game, game.Base + Offsets.Fly.MoveByVelEx, Original);
         if (_block != 0)
         {
             game.Write(_block + OffEnabled, 0);

@@ -67,7 +67,10 @@ public sealed class SprintBoostHook
     public void Revert(GameProcess game)
     {
         if (!Applied)
+        {
+            Detour.RemoveLeftover(game, game.Base + Offsets.MovementExReset, Original);
             return;
+        }
         game.WriteCode(game.Base + Offsets.MovementExReset, Original);
         SetOwner(game, 0);
         Applied = false;

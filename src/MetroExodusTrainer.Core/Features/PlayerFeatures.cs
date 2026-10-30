@@ -310,5 +310,8 @@ public sealed class FlyMode : Feature
         Warning = null;
     }
 
+    protected override void Defaults(GameProcess game, nint player) =>
+        game.Write<byte>(player + Offsets.Player.VsMoveAllowed + Offsets.Player.VsMoveAllowedJump, 1);
+
     protected override void OnShutdown(GameProcess game) => _hook.Revert(game);
 }

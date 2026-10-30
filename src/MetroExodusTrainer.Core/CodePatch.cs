@@ -33,7 +33,13 @@ public sealed class CodePatch(string name, Func<nint> rva, byte[] expected, byte
     public void Revert(GameProcess game)
     {
         if (!Applied)
+        {
+            // An earlier trainer run that was killed may have left the patch behind; it is recognized by its exact bytes.
+            var current = game.ReadBytes(game.Base + rva(), replacement.Length);
+            if (current is not null && current.AsSpan().SequenceEqual(replacement))
+                game.WriteCode(game.Base + rva(), expected);
             return;
+        }
         game.WriteCode(game.Base + rva(), expected);
         Applied = false;
     }
@@ -42,5 +48,21 @@ public sealed class CodePatch(string name, Func<nint> rva, byte[] expected, byte
     {
         Error = $"{Name}: {reason}";
         return false;
+    }
+}
+
+/// <summary>Removes a detour (<c>jmp [rip+0]</c> plus nop padding) that an earlier, killed trainer run left in the game.</summary>
+internal static class Detour
+{
+    public static void RemoveLeftover(GameProcess game, nint site, byte[] original)
+    {
+        if (original.Length < 14)
+            return;
+        var current = game.ReadBytes(site, original.Length);
+        if (current is null ||
+            !current.AsSpan(0, 6).SequenceEqual(new byte[] { 0xFF, 0x25, 0, 0, 0, 0 }) ||
+            current.Skip(14).Any(b => b != 0x90))
+            return;
+        game.WriteCode(site, original);
     }
 }

@@ -71,7 +71,10 @@ public sealed class ShotIntervalHook
     public void Revert(GameProcess game)
     {
         if (!Applied)
+        {
+            Detour.RemoveLeftover(game, game.Base + Offsets.Weapon.CalcShotIntervalReturn, Original);
             return;
+        }
         game.WriteCode(game.Base + Offsets.Weapon.CalcShotIntervalReturn, Original);
         SetFactor(game, 1f);
         Applied = false;

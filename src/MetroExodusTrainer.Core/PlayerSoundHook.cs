@@ -106,10 +106,14 @@ public sealed class PlayerSoundHook
 
     public void Revert(GameProcess game)
     {
+        if (_sites.Length == 0)
+            _sites = CreateSites();
         for (int i = 0; i < _sites.Length; i++)
         {
             if (_installed[i])
                 game.WriteCode(game.Base + _sites[i].Rva, _sites[i].Original);
+            else
+                Detour.RemoveLeftover(game, game.Base + _sites[i].Rva, _sites[i].Original);
             _installed[i] = false;
         }
         if (_block != 0)
