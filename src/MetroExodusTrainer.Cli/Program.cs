@@ -39,6 +39,18 @@ if (args.Length > 0 && args[0] == "watch")
     return;
 }
 
+if (args.Length > 0 && args[0] == "clock")
+{
+    using var g = GameProcess.Attach() ?? throw new InvalidOperationException("game not running");
+    nint dc = g.ReadPointer(g.Base + Offsets.World.GGame) + Offsets.World.DayCycle;
+    for (int i = 0; i < 6; i++)
+    {
+        Console.WriteLine($"speed={g.Read<float>(dc + Offsets.World.DaySpeed)} game_time={g.Read<ulong>(dc + 0x38)} base_mult={g.Read<float>(dc + 0x58)}");
+        Thread.Sleep(1000);
+    }
+    return;
+}
+
 var trainer = new Trainer();
 var featureKeys = Enumerable.Range(0, trainer.Features.Count).Select(Hotkeys.ForFeature).ToArray();
 var featureDown = new bool[featureKeys.Length];

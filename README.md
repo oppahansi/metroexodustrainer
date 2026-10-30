@@ -25,7 +25,7 @@ features, the next ones use Ctrl + Num1-Num9, then Alt + Num1-Num9.
 | Ctrl+Num1 | No recoil | working |
 | Ctrl+Num2 | Maximum accuracy (no spread) | working |
 | Ctrl+Num3 | Rapid fire (half the time between shots) | working |
-| Ctrl+Num4 | Invisible to enemies (they stop targeting you) | untested |
+| Ctrl+Num4 | Invisible to enemies (they stop targeting you) | works |
 | Ctrl+Num5 | Low enemy health (hostile NPCs die in one hit) | works |
 | Ctrl+Num6 | Freeze time of day | untested |
 | Num0 | Reset everything to the game's default values | working |

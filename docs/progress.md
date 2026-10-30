@@ -19,7 +19,8 @@ Tested means confirmed working in the game (Epic build 2.0.1.1).
 | Maximum accuracy | tested (code patch) |
 | Rapid fire | tested (hook) |
 | Low enemy health | works (verified in game) |
-| Invisible to enemies, freeze time of day | implemented, not yet verified |
+| Invisible to enemies | works (verified in game) |
+| Freeze time of day | implemented, not yet verified |
 | Unlimited medkits and throwables, no filter drain | implemented through the game's cheat flags, not yet verified |
 
 ## Planned
