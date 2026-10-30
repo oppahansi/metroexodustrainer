@@ -80,3 +80,9 @@ Siblings: `_startup_entity` +0x20, `_view_entity` +0x30.
 - At the moment the boost is lost, `cur_sprint` (+0x24f8) reads 0 for a single sample while its target, the allowed byte, stamina and `can_use` all read normal.
 - `update_xform` sets the current multiplier to 0 in the same frame the script clears `_vs_move_allowed[sprint]`, and `process_input` (RVA `0x8d0610`) drops the sprint flag whenever `can_sprint` fails. An external write 10 ms later is too late.
 - Infinite stamina therefore patches the store in `vs_actor_movement_allowed_set` (RVA `0xa4cda2`, `88 81 2a 25 00 00` -> six NOPs), only when those exact bytes are present, and reverts it when switched off or on exit.
+
+## The ~13 s boost removal (fourth capture, with the allowed-store patch active)
+- The sprint flag and `cur_sprint` stay normal, but at ~13.5 s of sprint the `_vs_speed_mod` count drops 1 -> 0 abruptly (no ramp), and speed falls 7.31 -> 5.0.
+- The entry is pushed by `vs::action_actor_movement_ex::on_activate` (-> `vs_actor_movement_ex_set`, RVA `0xa4cbd0`) and removed by `on_deactivate` (-> `vs_actor_movement_ex_reset`, RVA `0xa4c9a0`). The same deactivation also runs on a normal sprint release, so it cannot simply be disabled.
+- Infinite stamina re-creates the entry (owner null, current = target = boost) when it vanishes while sprint is still held, and sets its target back to 1.0 once sprint is released so the game pops it.
+- `ex_reset` removes entries whose owner is null or matches the caller's block, so a re-created entry is cleaned up by any later reset.

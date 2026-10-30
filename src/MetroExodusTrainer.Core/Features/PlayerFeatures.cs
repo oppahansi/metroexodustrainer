@@ -44,10 +44,13 @@ public sealed class InfiniteStamina : Feature
 
     private bool _origFreeze;
     private float _boost = 1f;       // highest sprint-boost target seen while sprinting
+    private float _blend = 10f;      // blend rate of the boost entry, copied when re-creating it
     private float _lastTarget = 1f;  // top modifier target on the previous tick
-    private bool _forced;            // we overrode a target to _boost and must give it back
+    private bool _forced;            // we overrode or re-created the boost entry and must give it back
+    private bool _hadBoost;          // the boost was active earlier in the sprint that is currently held
+    private int _heldTicks;          // consecutive ticks with the sprint flag set
 
-    // The exhaustion script clears the sprint-allowed byte for a frame; update_xform then zeroes the sprint
+    // Sprint-allowed script: it clears the sprint-allowed byte for a frame; update_xform then zeroes the sprint
     // multiplier and can_sprint fails before any external write can intervene, so the store is disabled.
     private readonly CodePatch _sprintAllowedPatch = new(
         "sprint-allowed store", Offsets.SprintAllowedStore,
@@ -60,7 +63,9 @@ public sealed class InfiniteStamina : Feature
     {
         _origFreeze = game.Read<byte>(player + Offsets.Player.StaminaFreeze) != 0;
         _boost = _lastTarget = 1f;
-        _forced = false;
+        _blend = 10f;
+        _forced = _hadBoost = false;
+        _heldTicks = 0;
         Warning = _sprintAllowedPatch.TryApply(game) ? null : _sprintAllowedPatch.Error;
     }
 
@@ -73,34 +78,47 @@ public sealed class InfiniteStamina : Feature
         KeepSprintBoost(game, player);
     }
 
+    /// <summary>
+    /// Sprinting runs a script block that pushes a speed modifier (target 1.5) and, after ~13 s, either sets its
+    /// target back to 1.0 or removes it outright. While sprint is held that modifier is kept (or re-created).
+    /// </summary>
     private void KeepSprintBoost(GameProcess game, nint player)
     {
         bool sprinting = game.TryRead<uint>(player + Offsets.Player.StateReal, out var state) &&
                          (state & Offsets.Player.SprintStateFlag) != 0;
         nint target = TopModifierTarget(game, player);
+
+        if (!sprinting)
+        {
+            // Sprint released: hand control back to the game if we were holding the boost.
+            if (_forced && target != 0)
+                game.Write(target, 1f);
+            _forced = _hadBoost = false;
+            _lastTarget = 1f;
+            _heldTicks = 0;
+            return;
+        }
+
+        _heldTicks++;
+
         if (target == 0)
         {
+            // The game removed the boost while sprint is still held (debounced so a fresh sprint can push its own).
+            if (_hadBoost && _heldTicks >= 5)
+                RecreateBoost(game, player);
             _lastTarget = 1f;
-            _forced = false;
             return;
         }
 
         if (!game.TryRead<float>(target, out var value))
             return;
 
-        if (!sprinting)
-        {
-            // Sprint released: hand control back to the game if we were holding the boost.
-            if (_forced)
-                game.Write(target, 1f);
-            _forced = false;
-            _lastTarget = 1f;
-            return;
-        }
-
         if (value > 1f + Epsilon)
         {
             _boost = Math.Max(_boost, value);
+            _hadBoost = true;
+            if (game.TryRead<float>(target + 4, out var blend) && blend > 0f)
+                _blend = blend;
         }
         else if (_forced || (_boost > 1f + Epsilon && _lastTarget > 1f + Epsilon && Math.Abs(value - 1f) < Epsilon))
         {
@@ -110,6 +128,26 @@ public sealed class InfiniteStamina : Feature
             value = _boost;
         }
         _lastTarget = value;
+    }
+
+    /// <summary>Re-creates the removed boost as the only stack entry (no script owner), at full strength.</summary>
+    private void RecreateBoost(GameProcess game, nint player)
+    {
+        nint array = game.ReadPointer(player + Offsets.Player.SpeedModArray);
+        if (array == 0 || !game.TryRead<ushort>(player + Offsets.Player.SpeedModCapacity, out var capacity) || capacity < 1)
+        {
+            Warning = "could not restore the sprint boost (modifier stack not allocated)";
+            return;
+        }
+
+        game.Write(array, _boost);            // current
+        game.Write(array + 4, _boost);        // target
+        game.Write(array + 8, _blend);        // blend
+        game.Write(array + 12, 0f);
+        game.Write<long>(array + 16, 0);      // no owning script block: any later reset removes it
+        game.Write<ushort>(player + Offsets.Player.SpeedModCount, 1);
+        _forced = true;
+        _lastTarget = _boost;
     }
 
     /// <summary>Address of the top speed-modifier's target field, or 0 if the stack is empty.</summary>

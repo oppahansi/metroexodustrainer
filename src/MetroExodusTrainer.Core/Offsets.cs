@@ -35,6 +35,7 @@ public static class Offsets
         public const nint StaticParams = 0x240;      // pointer to per-entity static params
         public const nint StaticBaseSpeed = 0xE04;   // float inside static params; base speed when the mod stack is empty
         public const nint SpeedModArray = 0x2548;    // pointer to vs_speed_mod entries (24 bytes: current, target, blend, ?, block*)
+        public const nint SpeedModCapacity = 0x2550; // u16 allocated entries; the array is kept after the stack empties
         public const nint SpeedModCount = 0x2552;    // u16 size of the stack; the top entry is the active base speed
         public const uint SprintStateFlag = 0x400;   // set in StateReal while the sprint key is active
         public const nint SpeedModStride = 24;
