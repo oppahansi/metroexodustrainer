@@ -22,7 +22,7 @@ Tested means confirmed working in the game (Epic build 2.0.1.1).
 | Gas mask never breaks | implemented (mask health), not yet verified |
 | Unlimited flashlight & night vision charge | implemented (charger voltage), not yet verified |
 | Air weapons stay pressurized | implemented (pressure kept in the high band), not yet verified |
-| Fly mode (no gravity, no collisions) | implemented (movement hook), not yet verified |
+| Fly mode (no gravity; walls still block, so not noclip) | works (verified in game) |
 | Weapons never get dirty | implemented (dirt half-float at weapon +0xB0), not yet verified |
 | Low enemy health | works (verified in game) |
 | Invisible to enemies | works (verified in game) |
