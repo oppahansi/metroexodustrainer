@@ -1,5 +1,4 @@
 <Solution>
   <Project Path="MetroExodusTrainer.Cli/MetroExodusTrainer.Cli.csproj" />
   <Project Path="MetroExodusTrainer.Core/MetroExodusTrainer.Core.csproj" />
-  <Project Path="MetroExodusTrainer.Probe/MetroExodusTrainer.Probe.csproj" />
 </Solution>

@@ -35,8 +35,6 @@ dotnet run --project src/MetroExodusTrainer.Cli
 Start the game and load a save (hotkeys are global, so they work while the game has focus; NumLock must be on). If the game runs
 as administrator, start the trainer as administrator too. Closing the trainer (Ctrl+C) restores the defaults.
 
-`src/MetroExodusTrainer.Probe` is a small read-only tool that prints the player pointer chain and a few values.
-
 ## How it works
 
 The game ships its debug symbols (`MetroExodus.pdb`), which gives function names and exact struct layouts.
@@ -48,7 +46,6 @@ exactly.
 ```
 src/MetroExodusTrainer.Core   process access, build check, offsets, features, code patches
 src/MetroExodusTrainer.Cli    console front-end (hotkeys, status display)
-src/MetroExodusTrainer.Probe  read-only diagnostic
 tools/                        PDB symbol/type dump and disassembly scripts (Python)
 docs/                         research notes and progress
 ```
