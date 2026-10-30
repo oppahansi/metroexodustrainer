@@ -1,0 +1,23 @@
+# Build output
+bin/
+obj/
+out/
+build/
+*.user
+.vs/
+.idea/
+
+# Game / third-party material that must never be committed
+*.pdb
+*.vfs*
+*.exe
+*.dll
+*.dmp
+research/private/
+research/dumps/
+reference/
+
+# Logs and local config
+*.log
+.env
+.claude/settings.local.json
