@@ -271,3 +271,21 @@ public static class MagazinedWeaponVtables
         0x121BD98, // weapon_vsv
     ];
 }
+
+/// <summary>Vtable RVAs of weapon_ammo (reserve ammo stack) items.</summary>
+public static class AmmoItemVtables
+{
+    public static readonly HashSet<long> Rvas =
+    [
+        0x115EA10,
+        0x115EA48,
+        0x115EA58,
+        0x1196D88,
+        0x11A4F50,
+        0x11AB960,
+        0x11AB968,
+        0x11AD638,
+        0x11AEB20,
+        0x11AEB50,
+    ];
+}

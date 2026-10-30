@@ -46,7 +46,9 @@ public static class Offsets
         public const nint AllItems = 0x278;          // u_vector<inventory_item*> inside inventory_player
         public const nint ItemOffsetInEntity = 0x620; // inventory_item subobject follows the 0x620-byte centity
         public const nint WeaponAmmoLoaded = 0x1940; // weapon_magazined::_ammo_loaded (u32)
-        public const nint AmmoBoxValue = 0x690;      // weapon_ammo::_box_value (u16)
+        public const nint AmmoBoxValue = 0x690;      // weapon_ammo units = reserve rounds of that ammo type (u16)
+        public const nint StaticParamsPtr = 0x678;   // inventory_item::_current_static_params
+        public const nint StaticSlotMax = 4;         // slot_max_num (u32) inside inventory_item::static_params
         public const nint MedkitCount = 0x9D0;       // decremented by medkit::apply_medkit (u32)
         public const nint MissileUnits = 0x190;      // missile_weapon units (u16), decremented by throw_me
     }

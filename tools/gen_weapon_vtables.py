@@ -1,7 +1,8 @@
-"""Generate the C# table of vtable RVAs for weapon classes derived from weapon_magazined.
+"""Generate the C# tables of vtable RVAs the trainer uses to recognize game objects.
 
-The trainer identifies weapon objects by their vtable, and only writes weapon_magazined fields into objects
-whose class really derives from it.
+- MagazinedWeaponVtables: firearm classes that really derive from weapon_magazined.
+- AmmoItemVtables: weapon_ammo (reserve ammo stack) items.
+The trainer identifies objects by their vtable and only writes class-specific fields into matching objects.
 
 Usage: python gen_weapon_vtables.py <exe> <symbols.tsv> <output .cs>
 Needs symbols.tsv from dump_symbols.py. Output is build-specific (RVAs of the given exe).
@@ -12,6 +13,7 @@ import sys
 from dump_types import Pdb, TAG, TI_SYMTAG, TI_TYPEID
 
 # Entities of a weapon class are instances of object_manager_hud<X, X_hud_item>::object_hud.
+AMMO_RE = re.compile(r"^uobject_t<weapon_ammo,\d+,\d+>::`vftable'$")
 VTABLE_RE = re.compile(r"^uobject_t<object_manager_hud<(\w+),\1_hud_item>::object_hud,\d+,\d+>::`vftable'$")
 
 
@@ -30,11 +32,15 @@ def derives_from(pdb, tid, target, depth=0):
 def main(exe, symbols, out_path):
     pdb = Pdb(exe)
     found = {}
+    ammo = []
     for line in open(symbols, encoding="utf-8", errors="replace"):
         parts = line.rstrip("\n").split("\t")
         if len(parts) != 4 or parts[2] != "7":
             continue
-        m = VTABLE_RE.match(parts[3].strip(chr(9) + chr(0) + chr(32)))
+        name = parts[3].strip(chr(9) + chr(0) + chr(32))
+        if AMMO_RE.match(name):
+            ammo.append(int(parts[0], 16))
+        m = VTABLE_RE.match(name)
         if m:
             found.setdefault(m.group(1), []).append(int(parts[0], 16))
 
@@ -52,6 +58,12 @@ def main(exe, symbols, out_path):
         f.write("    public static readonly HashSet<long> Rvas =\n    [\n")
         for cls, rva in rows:
             f.write(f"        0x{rva:X}, // {cls}\n")
+        f.write("    ];\n}\n\n")
+        f.write("/// <summary>Vtable RVAs of weapon_ammo (reserve ammo stack) items.</summary>\n")
+        f.write("public static class AmmoItemVtables\n{\n")
+        f.write("    public static readonly HashSet<long> Rvas =\n    [\n")
+        for rva in sorted(ammo):
+            f.write(f"        0x{rva:X},\n")
         f.write("    ];\n}\n")
     print(f"{len(rows)} vtables for {len({c for c, _ in rows})} classes ({len(found)} weapon-like classes seen)")
     skipped = sorted(set(found) - {c for c, _ in rows})

@@ -63,7 +63,15 @@ static int InventoryDump(GameProcess game)
                 nint entity = item - Offsets.Inventory.ItemOffsetInEntity;
                 nint vtable = game.ReadPointer(entity);
                 string name = ShortName(names.Resolve(vtable - game.Base));
-                if (name == "weapon_ammo" || !interesting.Any(name.StartsWith))
+                if (name == "weapon_ammo")
+                {
+                    nint prm = game.ReadPointer(entity + Offsets.Inventory.StaticParamsPtr);
+                    string slotMax = prm != 0 && game.TryRead<uint>(prm + Offsets.Inventory.StaticSlotMax, out var sm) ? sm.ToString() : "-";
+                    string units = game.TryRead<ushort>(entity + Offsets.Inventory.AmmoBoxValue, out var un) ? un.ToString() : "-";
+                    lines.Add($"  ammo 0x{entity:X}  units={units,-5} slot_max={slotMax}");
+                    continue;
+                }
+                if (!interesting.Any(name.StartsWith))
                     continue;
                 string U(nint off) => game.TryRead<uint>(entity + off, out var v) ? v.ToString() : "-";
                 string W(nint off) => game.TryRead<ushort>(entity + off, out var v) ? v.ToString() : "-";

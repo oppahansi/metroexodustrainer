@@ -1,3 +1,5 @@
+using MetroExodusTrainer.Core.Generated;
+
 namespace MetroExodusTrainer.Core.Features;
 
 /// <summary>
@@ -19,6 +21,8 @@ public abstract class ActorFlagFeature(uint mask) : Feature
 
     protected override void Defaults(GameProcess game, nint player) => Clear(game);
 
+    protected override void OnShutdown(GameProcess game) => Clear(game);
+
     private void Clear(GameProcess game)
     {
         nint address = game.Base + Offsets.PsActorFlags;
@@ -29,11 +33,48 @@ public abstract class ActorFlagFeature(uint mask) : Feature
 
 /// <summary>
 /// Weapons treat ammo as unlimited (weapon_magazined::unlimited_ammo), medkit use does not consume a medkit
-/// (medkit::apply_medkit) and throwing does not consume the stack (missile_weapon::throw_me).
+/// (medkit::apply_medkit) and throwing does not consume the stack (missile_weapon::throw_me). In addition the
+/// reserve ammo stacks are topped up to their slot maximum so the ammo counter reads full.
 /// </summary>
 public sealed class UnlimitedItems() : ActorFlagFeature(Offsets.ActorFlags.UnlimitedItems)
 {
     public override string Name => "Unlimited ammo, medkits & throwables";
+    public override bool NeedsPlayer => true;
+
+    protected override void Apply(GameProcess game, nint player)
+    {
+        base.Apply(game, player);
+        FillReserveAmmo(game, player);
+    }
+
+    private static void FillReserveAmmo(GameProcess game, nint player)
+    {
+        nint inventory = game.ReadPointer(player + Offsets.Player.Inventory);
+        nint array = inventory == 0 ? 0 : game.ReadPointer(inventory + Offsets.Inventory.AllItems);
+        if (array == 0 || !game.TryRead<ushort>(inventory + Offsets.Inventory.AllItems + 10, out var count))
+            return;
+
+        for (int i = 0; i < count; i++)
+        {
+            nint item = game.ReadPointer(array + i * 8);
+            if (item == 0)
+                continue;
+
+            nint ammo = item - Offsets.Inventory.ItemOffsetInEntity;
+            if (!AmmoItemVtables.Rvas.Contains(game.ReadPointer(ammo) - game.Base))
+                continue;
+
+            nint parameters = game.ReadPointer(ammo + Offsets.Inventory.StaticParamsPtr);
+            if (parameters == 0 ||
+                !game.TryRead<uint>(parameters + Offsets.Inventory.StaticSlotMax, out var max) || max is 0 or > 9999 ||
+                !game.TryRead<ushort>(ammo + Offsets.Inventory.AmmoBoxValue, out var units))
+                continue;
+
+            // Only ever raises the stack, so a wrong maximum cannot take ammo away.
+            if (units < max)
+                game.Write(ammo + Offsets.Inventory.AmmoBoxValue, (ushort)max);
+        }
+    }
 }
 
 /// <summary>Skips the gas mask filter spending and suffocation check in gasmask::update_state.</summary>
