@@ -36,6 +36,7 @@ public static class Offsets
         public const nint BaseSpeed = 0x27E0;
         public const nint BaseJump = 0x27E4;
         public const nint Stamina = 0x2A1C;
+        public const nint StaminaState = 0x2A20;     // estamina_state; 2 = exhausted, waiting for the restore timer
         public const nint CanUseStamina = 0x2A21;
     }
 }

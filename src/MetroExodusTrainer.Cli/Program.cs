@@ -5,9 +5,21 @@ using MetroExodusTrainer.Core;
 // Start the game (or the trainer) first; the trainer waits for the game and re-attaches if it restarts.
 
 const int TickMs = 20;
-int[] hotkeys = [0x70, 0x71, 0x72, 0x73]; // F1..F4
+const int DrawEveryMs = 250;
+const int ResetKey = 0x7B; // F12
+int[] featureKeys = [0x70, 0x71, 0x72, 0x73]; // F1..F4
+
 var trainer = new Trainer();
-var down = new bool[hotkeys.Length];
+var down = new bool[featureKeys.Length + 1];
+GameProcess? current = null;
+
+// Put the game back to its defaults when the trainer is closed (Ctrl+C or window close).
+Console.CancelKeyPress += (_, e) =>
+{
+    e.Cancel = true;
+    RestoreAndExit();
+};
+AppDomain.CurrentDomain.ProcessExit += (_, _) => RestoreDefaults();
 
 Console.CursorVisible = false;
 while (true)
@@ -15,33 +27,59 @@ while (true)
     Console.Clear();
     Console.WriteLine("Waiting for MetroExodus.exe ...");
     using var game = WaitForGame();
+    current = game;
     var build = BuildInfo.FromExe(game.ExePath);
     bool buildOk = build.FileVersion == Offsets.KnownFileVersion;
 
-    int lastDrawn = 0;
+    long lastDraw = 0;
     while (!game.HasExited)
     {
-        for (int i = 0; i < hotkeys.Length && i < trainer.Features.Count; i++)
+        bool reset = false;
+        for (int i = 0; i < down.Length; i++)
         {
-            bool pressed = (GetAsyncKeyState(hotkeys[i]) & 0x8000) != 0;
+            int key = i < featureKeys.Length ? featureKeys[i] : ResetKey;
+            bool pressed = (GetAsyncKeyState(key) & 0x8000) != 0;
             if (pressed && !down[i] && buildOk)
-                trainer.Features[i].Toggle();
+            {
+                if (i < featureKeys.Length && i < trainer.Features.Count)
+                    trainer.Features[i].Toggle();
+                else if (i == featureKeys.Length)
+                    reset = true;
+            }
             down[i] = pressed;
         }
 
-        trainer.Tick(game);
+        if (reset)
+            trainer.ResetAll(game);
+        else if (buildOk)
+            trainer.Tick(game);
 
-        int hash = HashCode.Combine(trainer.PlayerFound, string.Join(',', trainer.Features.Select(f => f.Enabled)));
-        if (hash != lastDrawn)
+        long now = Environment.TickCount64;
+        if (now - lastDraw >= DrawEveryMs)
         {
-            lastDrawn = hash;
-            Draw(build, buildOk, trainer);
+            lastDraw = now;
+            Draw(game, build, buildOk, trainer);
         }
         Thread.Sleep(TickMs);
     }
 
-    // Game closed: forget feature state so nothing is half-applied on the next launch.
+    // Game closed: nothing left to restore, just forget the feature state.
     foreach (var f in trainer.Features) f.Set(false);
+    current = null;
+}
+
+void RestoreDefaults()
+{
+    var game = current;
+    if (game is null || game.HasExited)
+        return;
+    try { trainer.ResetAll(game); } catch { /* process went away while shutting down */ }
+}
+
+void RestoreAndExit()
+{
+    RestoreDefaults();
+    Environment.Exit(0);
 }
 
 static GameProcess WaitForGame()
@@ -55,19 +93,42 @@ static GameProcess WaitForGame()
     }
 }
 
-static void Draw(BuildInfo build, bool buildOk, Trainer trainer)
+static void Draw(GameProcess game, BuildInfo build, bool buildOk, Trainer trainer)
 {
-    Console.Clear();
-    Console.WriteLine("MetroExodusTrainer");
-    Console.WriteLine($"Game build: {build}");
-    if (!buildOk)
-        Console.WriteLine($"UNSUPPORTED BUILD (expected {Offsets.KnownFileVersion}); features are disabled.");
-    Console.WriteLine(trainer.PlayerFound ? "Player: found" : "Player: not found (load a save; not in cutscene/menu)");
-    Console.WriteLine();
+    Console.SetCursorPosition(0, 0);
+    var lines = new List<string>
+    {
+        "MetroExodusTrainer",
+        $"Game build: {build}",
+        buildOk ? "" : $"UNSUPPORTED BUILD (expected {Offsets.KnownFileVersion}); features are disabled.",
+        trainer.PlayerFound ? "Player: found" : "Player: not found (load a save; not in cutscene/menu)",
+        "",
+    };
     for (int i = 0; i < trainer.Features.Count; i++)
-        Console.WriteLine($"  F{i + 1}  [{(trainer.Features[i].Enabled ? "ON " : "off")}]  {trainer.Features[i].Name}");
-    Console.WriteLine();
-    Console.WriteLine("Ctrl+C to quit.");
+        lines.Add($"  F{i + 1}   [{(trainer.Features[i].Enabled ? "ON " : "off")}]  {trainer.Features[i].Name}");
+    lines.Add("  F12        Reset everything to default values");
+    lines.Add("");
+    lines.Add(Diagnostics(game, trainer));
+    lines.Add("");
+    lines.Add("Ctrl+C to quit (restores defaults).");
+
+    int width = Math.Max(Console.WindowWidth - 1, 40);
+    foreach (var line in lines)
+        Console.WriteLine(line.PadRight(width));
+}
+
+static string Diagnostics(GameProcess game, Trainer trainer)
+{
+    string speed = game.TryRead<float>(game.Base + Offsets.PlayerSpeedScale, out var sp) ? sp.ToString("F2") : "-";
+    if (!trainer.PlayerFound)
+        return $"live: speed_scale={speed}";
+
+    nint p = trainer.Player;
+    string F(nint off) => game.TryRead<float>(p + off, out var v) ? v.ToString("F2") : "-";
+    string B(nint off) => game.TryRead<byte>(p + off, out var v) ? v.ToString() : "-";
+    return $"live: health={F(Offsets.Player.Health)} stamina={F(Offsets.Player.Stamina)} " +
+           $"freeze={B(Offsets.Player.StaminaFreeze)} can_use={B(Offsets.Player.CanUseStamina)} " +
+           $"state={B(Offsets.Player.StaminaState)} jump={F(Offsets.Player.BaseJump)} speed_scale={speed}";
 }
 
 partial class Program

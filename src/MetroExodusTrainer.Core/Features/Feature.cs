@@ -6,6 +6,9 @@ public abstract class Feature
     public abstract string Name { get; }
     public bool Enabled { get; private set; }
 
+    /// <summary>False for features that only touch globals, so they keep working (and restore) without a player entity.</summary>
+    public virtual bool NeedsPlayer => true;
+
     /// <summary>Called on the tick after the feature is switched on, before the first <see cref="Apply"/>.</summary>
     protected virtual void OnEnable(GameProcess game, nint player) { }
 

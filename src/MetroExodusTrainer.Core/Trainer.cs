@@ -13,16 +13,27 @@ public sealed class Trainer
         new HighJump(),
     ];
 
-    /// <summary>Whether the last tick found the player entity.</summary>
-    public bool PlayerFound { get; private set; }
+    /// <summary>Address of the player found by the last tick, or 0.</summary>
+    public nint Player { get; private set; }
+
+    public bool PlayerFound => Player != 0;
+
+    /// <summary>Switches every feature off; each one writes back the value it found when it was enabled.</summary>
+    public void ResetAll(GameProcess game)
+    {
+        foreach (var feature in Features)
+            feature.Set(false);
+        Tick(game);
+    }
 
     public void Tick(GameProcess game)
     {
         nint player = PlayerLocator.Find(game);
-        PlayerFound = player != 0;
-        if (!PlayerFound)
-            return;
+        Player = player;
         foreach (var feature in Features)
-            feature.Tick(game, player);
+        {
+            if (PlayerFound || !feature.NeedsPlayer)
+                feature.Tick(game, player);
+        }
     }
 }

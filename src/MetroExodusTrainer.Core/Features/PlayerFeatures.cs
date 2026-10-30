@@ -31,7 +31,7 @@ public sealed class Invulnerability : Feature
 
 /// <summary>
 /// Freezes stamina drain (update_stamina takes its regeneration path while the freeze flag is set)
-/// and tops the value up every tick to cover jump costs.
+/// tops the value up every tick to cover jump costs, and clears the "exhausted" state.
 /// </summary>
 public sealed class InfiniteStamina : Feature
 {
@@ -46,6 +46,7 @@ public sealed class InfiniteStamina : Feature
     {
         game.Write<byte>(player + Offsets.Player.StaminaFreeze, 1);
         game.Write(player + Offsets.Player.Stamina, 1f);
+        game.Write<byte>(player + Offsets.Player.StaminaState, 0); // never stay "exhausted"
     }
 
     protected override void Restore(GameProcess game, nint player) =>
@@ -75,6 +76,7 @@ public sealed class FastMovement : Feature
     private float _original = 1f;
 
     public override string Name => "Fast movement";
+    public override bool NeedsPlayer => false;
 
     protected override void OnEnable(GameProcess game, nint player)
     {
