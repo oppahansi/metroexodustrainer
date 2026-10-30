@@ -286,6 +286,24 @@ if (args.Length > 1 && args[0] == "trace")
     return;
 }
 
+if (args.Length > 0 && args[0] == "scan")
+{
+    // Resolves the game's addresses by signature and compares them with the stored values of the known build.
+    using var g = GameProcess.Attach() ?? throw new InvalidOperationException("game not running");
+    var watch = System.Diagnostics.Stopwatch.StartNew();
+    var found = SignatureScanner.Scan(g, MetroExodusTrainer.Core.Generated.GameSignatures.All);
+    watch.Stop();
+    int same = 0;
+    foreach (var e in MetroExodusTrainer.Core.Generated.GameSignatures.All)
+    {
+        bool ok = found.TryGetValue(e.Name, out var rva) && rva == e.DefaultRva;
+        if (ok) same++;
+        Console.WriteLine($"{e.Name,-26} stored=0x{e.DefaultRva:X} scanned={(found.TryGetValue(e.Name, out var r2) ? "0x" + r2.ToString("X") : "NOT FOUND")} {(ok ? "ok" : "DIFFERENT")}");
+    }
+    Console.WriteLine($"{same}/{MetroExodusTrainer.Core.Generated.GameSignatures.All.Length} match, scan took {watch.ElapsedMilliseconds} ms");
+    return;
+}
+
 var trainer = new Trainer();
 var featureKeys = trainer.Features.Select(f => Hotkeys.ForFeature(f.Slot)).ToArray();
 var featureDown = new bool[featureKeys.Length];

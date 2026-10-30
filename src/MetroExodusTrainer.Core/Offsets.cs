@@ -8,13 +8,13 @@ public static class Offsets
 {
     public const string KnownFileVersion = "2.0.1.1";
 
-    public const nint GLevel = 0x1691C40;
+    public static nint GLevel { get; internal set; } = 0x1691C40;
 
     /// <summary>
     /// RVA of ps_actor_flags, a u32 of developer cheat flags that game code tests directly:
     /// bit 0 god mode, bit 3 unlimited ammo / medkits / throwables, bit 7 gas mask filters and suffocation.
     /// </summary>
-    public const nint PsActorFlags = 0x15A8824;
+    public static nint PsActorFlags { get; internal set; } = 0x15A8824;
 
     public static class ActorFlags
     {
@@ -26,7 +26,7 @@ public static class Offsets
     /// <summary>The in-game clock (igame::day_cycle inside the game object).</summary>
     public static class World
     {
-        public const nint GGame = 0x1691C08;         // pointer to the game object (cgame, derives from igame)
+        public static nint GGame { get; internal set; } = 0x1691C08;         // pointer to the game object (cgame, derives from igame)
         public const nint DayCycle = 0xD200;         // igame::_day_cycle
         public const nint DayBaseMult = 0x58;        // float, game seconds per real second (12); 0 stops the clock. The float at +0x0 is recomputed every frame
         public const nint DayStart = 0x48;           // u64
@@ -39,8 +39,8 @@ public static class Offsets
         public const nint ControllerLastVelocityY = 0x378; // nx_dynamic_cct::_last_vel.y
         public const nint HeadPitch = 0x9E0;           // cplayer::_head_angles.x, radians, negative looking up
         public const nint HeadYaw = 0x9E4;             // cplayer::_head_angles.y, radians
-        public const nint MoveByVelEx = 0x792020;      // mov_control_nx_player::move_by_vel_ex, called every frame per mover
-        public const nint StepConstant = 0x16FE244;    // float passed as the step time by move_no_collision to apply_move_disp (vtable +0x320)
+        public static nint MoveByVelEx { get; internal set; } = 0x792020;      // mov_control_nx_player::move_by_vel_ex, called every frame per mover
+        public static nint StepConstant { get; internal set; } = 0x16FE244;    // float passed as the step time by move_no_collision to apply_move_disp (vtable +0x320)
     }
 
     /// <summary>Air pressure of weapon_pneumo-derived firearms.</summary>
@@ -63,40 +63,40 @@ public static class Offsets
     /// <summary>The player's light exposure.</summary>
     public static class Stealth
     {
-        public const nint Update = 0xA90940; // stealth_base::update(this, owner, ...); factor at +0x28, smoothed at +0x1C
+        public static nint Update { get; internal set; } = 0xA90940; // stealth_base::update(this, owner, ...); factor at +0x28, smoothed at +0x1C
     }
 
     /// <summary>Where NPCs take in sounds.</summary>
     public static class Sound
     {
-        public const nint SoundMemoryOnSound = 0xF8CCC0;   // sound_memory_manager::on_sound(this, sound data, ...)
-        public const nint ThreatMemoryOnSound = 0xB730C0;  // base_threat_memory_manager::on_sound(this, object data)
+        public static nint SoundMemoryOnSound { get; internal set; } = 0xF8CCC0;   // sound_memory_manager::on_sound(this, sound data, ...)
+        public static nint ThreatMemoryOnSound { get; internal set; } = 0xB730C0;  // base_threat_memory_manager::on_sound(this, object data)
         public const nint SharedBaseInEntity = 0xE0;       // an entity's intrusive_base subobject (what shared parts point to)
     }
 
     /// <summary>The entity list and NPC fields.</summary>
     public static class Entities
     {
-        public const nint GEntities = 0x1691BF0;     // pointer to entities_server
+        public static nint GEntities { get; internal set; } = 0x1691BF0;     // pointer to entities_server
         public const nint EntityVector = 0x10;       // entities_server::_entities (u_vector of uobject*; u16 size at +0xA)
         public const nint Health = 0x3B8;            // centity::_health, normalized float
         public const nint FriendType = 0x3D9;        // centity::_friend_type: faction byte; the player is 2, 0 neutral, 5 hostile to all
     }
 
     /// <summary>RVA of the vtable for uobject_t&lt;player_new,0,25&gt;; used to confirm an entity is the player.</summary>
-    public const long PlayerVtable = 0x11E2728;
+    public static long PlayerVtable { get; internal set; } = 0x11E2728;
 
     /// <summary>RVA of the float inside the g_player_speed_scale console variable; multiplied into movement speed.</summary>
-    public const nint PlayerSpeedScale = 0x163DCE8;
+    public static nint PlayerSpeedScale { get; internal set; } = 0x163DCE8;
 
     /// <summary>
     /// RVA of the instruction in cplayer::vs_actor_movement_allowed_set that stores the sprint-allowed byte
     /// (mov [rcx+0x252a], al = 88 81 2a 25 00 00).
     /// </summary>
-    public const nint SprintAllowedStore = 0xA4CDA2;
+    public static nint SprintAllowedStore { get; internal set; } = 0xA4CDA2;
 
     /// <summary>RVA of cplayer::vs_actor_movement_ex_reset(owner block in rdx), which removes script speed modifiers.</summary>
-    public const nint MovementExReset = 0xA4C9A0;
+    public static nint MovementExReset { get; internal set; } = 0xA4C9A0;
 
     /// <summary>Default value of g_player_speed_scale observed in game (the engine initializer, not 1.0).</summary>
     public const float DefaultPlayerSpeedScale = 1.25f;
@@ -119,13 +119,13 @@ public static class Offsets
     public static class Weapon
     {
         /// <summary>RVA of weapon_magazined::recoil_curve_evaluate, which turns the recoil level into kick.</summary>
-        public const nint RecoilCurveEvaluate = 0x8F2F90;
+        public static nint RecoilCurveEvaluate { get; internal set; } = 0x8F2F90;
 
         /// <summary>RVA of weapon::fire_dispersion, which returns the shot spread as a float.</summary>
-        public const nint FireDispersion = 0xA60650;
+        public static nint FireDispersion { get; internal set; } = 0xA60650;
 
         /// <summary>RVA of the epilogue of weapon_magazined::calc_shot_interval, where the result sits in xmm6.</summary>
-        public const nint CalcShotIntervalReturn = 0x8FC893;
+        public static nint CalcShotIntervalReturn { get; internal set; } = 0x8FC893;
 
         public const nint Dirt = 0xB0;               // half-float dirt level, 0 = clean
         public const nint CurrentDispersion = 0x9E0; // float, spread added by movement and firing
