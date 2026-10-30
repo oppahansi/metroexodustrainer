@@ -148,6 +148,10 @@ All fields are on the `weapon_magazined`-derived entity found through the invent
   first qword is the source object's `intrusive_base`, which is the entity + `0xE0`. Dropping sounds whose source is the player
   makes NPCs deaf to it. `g_ai_mask` is only a vision debug overlay, not a switch for AI.
 
+- **Light exposure:** `cplayer::_stealth` (a `stealth_base` at `+0x2348`) holds the player's exposure; `stealth_base::update`
+  (RVA `0xA90940`) writes the factor to `+0x28` (cplayer `+0x2370`) and a smoothed value to `+0x1C`. `cplayer::lumin_calc`,
+  `slow_stealth_luminocity` and the watch's light level read it. Making `update` store zeros darkens the watch indicator.
+
 ### Defaults and reset (Num0)
 Values captured when a feature is switched on can be stale if an earlier run was closed with the feature on.
 Num0 therefore writes real defaults, whether or not the feature is on:

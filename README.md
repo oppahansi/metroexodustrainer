@@ -25,7 +25,7 @@ features, the next ones use Ctrl + Num1-Num9, then Alt + Num1-Num9.
 | Ctrl+Num1 | No recoil | working |
 | Ctrl+Num2 | Maximum accuracy (no spread) | working |
 | Ctrl+Num3 | Rapid fire (half the time between shots) | working |
-| Ctrl+Num4 | Invisible to enemies (they stop targeting you) | works |
+| Ctrl+Num4 | Invisible to enemies (they stop targeting you, and the watch light reads dark) | works; light-exposure part untested |
 | Ctrl+Num5 | Low enemy health (hostile NPCs die in one hit) | works |
 | Ctrl+Num6 | Enemies cannot hear you | untested |
 | Ctrl+Num7 | Freeze time of day | works |

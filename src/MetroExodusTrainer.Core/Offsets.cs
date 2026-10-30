@@ -33,6 +33,12 @@ public static class Offsets
         public const nint DayEnd = 0x50;             // u64
     }
 
+    /// <summary>The player's light exposure.</summary>
+    public static class Stealth
+    {
+        public const nint Update = 0xA90940; // stealth_base::update(this, owner, ...); factor at +0x28, smoothed at +0x1C
+    }
+
     /// <summary>Where NPCs take in sounds.</summary>
     public static class Sound
     {

@@ -2,11 +2,46 @@ namespace MetroExodusTrainer.Core.Features;
 
 /// <summary>
 /// Enemies stop treating the player as a target: <c>cplayer::is_target</c> returns "not a target" while bit 2 of
-/// the developer cheat flags is set.
+/// the developer cheat flags is set. The player's light exposure (<c>stealth_base::update</c>, which also drives the
+/// watch's light indicator and what NPCs read through <c>slow_stealth_luminocity</c>) is held at zero too, so the
+/// watch reads dark and being in the light no longer gives the player away.
 /// </summary>
 public sealed class Invisibility() : ActorFlagFeature(Offsets.ActorFlags.NotATarget)
 {
+    // Entry of stealth_base::update(this, owner, ...) becomes: mov [rcx+28h],0 ; mov [rcx+1Ch],0 ; ret
+    private readonly CodePatch _exposurePatch = new(
+        "light exposure", Offsets.Stealth.Update,
+        expected: [0x48, 0x85, 0xD2, 0x0F, 0x84, 0x54, 0x01, 0x00, 0x00, 0x53, 0x55, 0x41, 0x56, 0x48, 0x83],
+        replacement:
+        [
+            0xC7, 0x41, 0x28, 0x00, 0x00, 0x00, 0x00,
+            0xC7, 0x41, 0x1C, 0x00, 0x00, 0x00, 0x00,
+            0xC3,
+        ]);
+
     public override string Name => "Invisible to enemies";
+
+    protected override void OnEnable(GameProcess game, nint player) =>
+        Warning = _exposurePatch.TryApply(game) ? null : _exposurePatch.Error;
+
+    protected override void Restore(GameProcess game, nint player)
+    {
+        base.Restore(game, player);
+        _exposurePatch.Revert(game);
+        Warning = null;
+    }
+
+    protected override void Defaults(GameProcess game, nint player)
+    {
+        base.Defaults(game, player);
+        _exposurePatch.Revert(game);
+    }
+
+    protected override void OnShutdown(GameProcess game)
+    {
+        base.OnShutdown(game);
+        _exposurePatch.Revert(game);
+    }
 }
 
 /// <summary>
