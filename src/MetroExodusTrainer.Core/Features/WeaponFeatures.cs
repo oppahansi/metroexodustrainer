@@ -65,47 +65,55 @@ public sealed class NoRecoil : WeaponFieldFeature
     }
 }
 
-/// <summary>Clears the dynamic spread (movement and firing) of every weapon.</summary>
-public sealed class MaxAccuracy : WeaponFieldFeature
+/// <summary>
+/// Removes the shot spread. <c>weapon::fire_dispersion</c> returns the spread as a float in xmm0, so it is patched
+/// to return 0 (<c>xorps xmm0,xmm0; ret</c>); the game recomputes the spread every shot, so field writes are too late.
+/// </summary>
+public sealed class MaxAccuracy : Feature
 {
+    private readonly CodePatch _patch = new(
+        "fire dispersion", Offsets.Weapon.FireDispersion,
+        expected: [0x48, 0x8B, 0xC4, 0x55, 0x53],
+        replacement: [0x0F, 0x57, 0xC0, 0xC3, 0x90]);
+
     public override string Name => "Maximum shoot accuracy";
 
-    protected override void ApplyTo(GameProcess game, nint weapon) =>
-        game.Write(weapon + Offsets.Weapon.CurrentDispersion, 0f);
-}
+    protected override void OnEnable(GameProcess game, nint player) =>
+        Warning = _patch.TryApply(game) ? null : _patch.Error;
 
-/// <summary>Halves the time between shots; the original interval is put back when switched off.</summary>
-public sealed class RapidFire : Feature
-{
-    private const float Factor = 0.5f;
-    private const float MaxPlausibleInterval = 5f;
-
-    // Original shot interval per weapon, captured the first time the weapon is seen.
-    private readonly Dictionary<nint, float> _original = [];
-
-    public override string Name => "Rapid fire";
-
-    protected override void OnEnable(GameProcess game, nint player) => _original.Clear();
-
-    protected override void Apply(GameProcess game, nint player)
-    {
-        foreach (nint weapon in Firearms.Find(game, player))
-        {
-            nint address = weapon + Offsets.Weapon.ShotInterval;
-            if (!game.TryRead<float>(address, out var current) || current <= 0f || current > MaxPlausibleInterval)
-                continue;
-
-            // A value we wrote ourselves is current == original * Factor; anything else is the game's own value.
-            if (!_original.TryGetValue(weapon, out var original) || Math.Abs(current - original * Factor) > 1e-4f)
-                _original[weapon] = original = current;
-            game.Write(address, original * Factor);
-        }
-    }
+    protected override void Apply(GameProcess game, nint player) { }
 
     protected override void Restore(GameProcess game, nint player)
     {
-        foreach (var (weapon, original) in _original)
-            game.Write(weapon + Offsets.Weapon.ShotInterval, original);
-        _original.Clear();
+        _patch.Revert(game);
+        Warning = null;
     }
+
+    protected override void OnShutdown(GameProcess game) => _patch.Revert(game);
+}
+
+/// <summary>
+/// Shortens the time between shots. The interval is computed in <c>calc_shot_interval</c>; a hook scales its result,
+/// so the game's own value is never overwritten and switching off simply puts the factor back to 1.
+/// </summary>
+public sealed class RapidFire : Feature
+{
+    private const float Factor = 0.5f;
+
+    private readonly ShotIntervalHook _hook = new();
+
+    public override string Name => "Rapid fire";
+
+    protected override void OnEnable(GameProcess game, nint player) =>
+        Warning = _hook.TryApply(game, Factor) ? null : _hook.Error;
+
+    protected override void Apply(GameProcess game, nint player) { }
+
+    protected override void Restore(GameProcess game, nint player)
+    {
+        _hook.Revert(game);
+        Warning = null;
+    }
+
+    protected override void OnShutdown(GameProcess game) => _hook.Revert(game);
 }

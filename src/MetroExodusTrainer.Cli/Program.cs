@@ -9,10 +9,6 @@ const int DrawEveryMs = 250;
 
 var trainer = new Trainer();
 var featureKeys = Enumerable.Range(0, trainer.Features.Count).Select(Hotkeys.ForFeature).ToArray();
-var featureDown = new bool[featureKeys.Length];
-var featureDebounce = featureKeys.Select(_ => new Hotkeys.Debouncer()).ToArray();
-var resetDebounce = new Hotkeys.Debouncer();
-bool resetDown = false;
 GameProcess? current = null;
 
 // Put the game back to its defaults when the trainer is closed (Ctrl+C or window close).
@@ -25,6 +21,7 @@ AppDomain.CurrentDomain.ProcessExit += (_, _) => RestoreDefaults();
 
 // Windows sleeps in ~15 ms steps by default; ask for 1 ms so ticks keep up with the game's frame rate.
 timeBeginPeriod(1);
+Hotkeys.Start();
 
 Console.CursorVisible = false;
 while (true)
@@ -39,18 +36,11 @@ while (true)
     long lastDraw = 0;
     while (!game.HasExited)
     {
-        Hotkeys.Update();
         for (int i = 0; i < featureKeys.Length; i++)
-        {
-            bool pressed = featureDebounce[i].Held(featureKeys[i].IsDown());
-            if (pressed && !featureDown[i] && buildOk)
+            if (featureKeys[i].Consume() && buildOk)
                 trainer.Features[i].Toggle();
-            featureDown[i] = pressed;
-        }
 
-        bool resetPressed = resetDebounce.Held(Hotkeys.Reset.IsDown());
-        bool reset = resetPressed && !resetDown && buildOk;
-        resetDown = resetPressed;
+        bool reset = Hotkeys.Reset.Consume() && buildOk;
 
         if (reset)
             trainer.ResetAll(game);

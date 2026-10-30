@@ -60,6 +60,12 @@ public static class Offsets
         /// <summary>RVA of weapon_magazined::recoil_curve_evaluate, which turns the recoil level into kick.</summary>
         public const nint RecoilCurveEvaluate = 0x8F2F90;
 
+        /// <summary>RVA of weapon::fire_dispersion, which returns the shot spread as a float.</summary>
+        public const nint FireDispersion = 0xA60650;
+
+        /// <summary>RVA of the epilogue of weapon_magazined::calc_shot_interval, where the result sits in xmm6.</summary>
+        public const nint CalcShotIntervalReturn = 0x8FC893;
+
         public const nint CurrentDispersion = 0x9E0; // float, spread added by movement and firing
         public const nint ShotInterval = 0xA64;      // float seconds between shots
         public const nint RecoilLevel = 0x1970;      // float
