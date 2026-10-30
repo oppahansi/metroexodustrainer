@@ -9,7 +9,7 @@ different build.
 ## Features
 
 Hotkeys are on the numpad (the game uses the F keys), so **NumLock must be on**. When there are more than nine
-features, the next ones use Shift + Num1-Num9.
+features, the next ones use Shift + Num1-Num9, then Ctrl + Num1-Num9, then Alt + Num1-Num9.
 
 | Key | Function | Status |
 |---|---|---|
