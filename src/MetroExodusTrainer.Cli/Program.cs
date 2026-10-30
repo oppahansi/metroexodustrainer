@@ -138,7 +138,9 @@ static string[] Diagnostics(GameProcess game, Trainer trainer)
         $"state={B(Offsets.Player.StaminaState)} jump={F(Offsets.Player.BaseJump)} speed_scale={speed}",
         $"move: speed={F(Offsets.Player.MoveSpeed)} flags={state} tired={B(Offsets.Player.TiredForSprint)} " +
         $"damaged={B(Offsets.Player.DamagedForSprint)} blend={F(Offsets.Player.VsSpeedBlend)}",
-        $"vs_speed walk/run/sprint/crouch={Quad(Offsets.Player.VsSpeed)}  target={Quad(Offsets.Player.VsSpeedTarget)}",
+        $"vs_speed walk/run/sprint/crouch={Quad(Offsets.Player.VsSpeed)}  target={Quad(Offsets.Player.VsSpeedTarget)}  " +
+        $"allowed={B(Offsets.Player.VsMoveAllowed)}/{B(Offsets.Player.VsMoveAllowed + 1)}/{B(Offsets.Player.VsMoveAllowed + 2)}/" +
+        $"{B(Offsets.Player.VsMoveAllowed + 3)}/{B(Offsets.Player.VsMoveAllowed + 4)}",
     ];
 }
 

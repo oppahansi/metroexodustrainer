@@ -59,3 +59,9 @@ Siblings: `_startup_entity` +0x20, `_view_entity` +0x30.
 - `_stamina_state` (+0x2a20): 0 idle, 1 recovering, 2 in use.
 - `use_stamina` subtracts the cost, clamps to 0..1, sets state 2, and when stamina drops below the static-params threshold clears `_can_use_stamina` (+0x2a21) and queues `do_restore_stamina_use` (RVA `0x8184c0`), which sets it back to 1.
 - `can_sprint` (RVA `0x8d0280`) and `can_jump` require `_can_use_stamina` set and `_stamina` >= the minimum, so exhaustion = `_can_use_stamina == 0`.
+
+## Sprint "exhaustion" is a script, not the stamina value
+- `cplayer::_vs_move_allowed` (+0x2528, 5 bytes: walk, run, sprint, crouch, jump) is written by `vs_actor_movement_allowed_set` (RVA `0xa4cd70`); `..._reset` (RVA `0xa4cd20`) sets them all to 1.
+- `update_xform` forces each `_vs_speed` multiplier's target to 0 when its allowed byte is 0, and `can_sprint` fails while `_vs_speed.sprint <= 0`.
+- Observed live: while "exhausted" stamina=1.0, `can_use`=1, `_vs_speed` sprint=0.0 with target 1.0. The infinite stamina feature therefore also keeps the sprint-allowed byte set.
+- The game's default `g_player_speed_scale` is 1.25, not 1.0.
