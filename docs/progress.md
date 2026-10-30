@@ -11,15 +11,18 @@ Tested means confirmed working in the game (Epic build 2.0.1.1).
 | Infinite stamina | tested (includes removing the sprint exhaustion slowdown) |
 | Fast movement | tested |
 | High jump | tested |
-| Reset to defaults (F12, also on exit) | tested |
+| Reset to defaults (Num0, also on exit) | tested |
+| Unlimited reserve ammo (reloads with no reserve work) | tested |
+| Infinite magazine (16 firearms) | tested |
+| Unlimited medkits and throwables, no filter drain | implemented through the game's cheat flags, not yet verified |
 
 ## Planned
 
 Most of these need the inventory and weapon structures located first (see open questions in
 [research-notes.md](research-notes.md)).
 
-- Ammo and consumables: infinite ammo, no reload, medkits, filters, throwing knives, hand grenades, decoys,
-  Molotov cocktails, materials, chemicals
+- Consumables: filters, materials, chemicals; verify medkits, throwing knives, hand grenades, decoys and
+  Molotov cocktails
 - Gas mask: durability, filter time, play without gas mask
 - Batteries and devices: flashlight and night vision charge, "Hellbreath" charge, air bottle pressure
 - Weapons: no recoil, maximum accuracy, rapid fire, no overheat, no jam, always clean, no scope sway

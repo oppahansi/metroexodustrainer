@@ -6,12 +6,11 @@ using MetroExodusTrainer.Core;
 
 const int TickMs = 10;
 const int DrawEveryMs = 250;
-const int ResetKey = 0x7B; // F12
-const int DumpKey = 0x7A;  // F11
-int[] featureKeys = [0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76]; // F1..F7
 
 var trainer = new Trainer();
-var down = new bool[featureKeys.Length + 2];
+var featureKeys = Enumerable.Range(0, trainer.Features.Count).Select(Hotkeys.ForFeature).ToArray();
+var featureDown = new bool[featureKeys.Length];
+bool resetDown = false, traceDown = false;
 var recorder = new TraceRecorder();
 string? dumpMessage = null;
 GameProcess? current = null;
@@ -40,22 +39,22 @@ while (true)
     long lastDraw = 0;
     while (!game.HasExited)
     {
-        bool reset = false;
-        for (int i = 0; i < down.Length; i++)
+        for (int i = 0; i < featureKeys.Length; i++)
         {
-            int key = i < featureKeys.Length ? featureKeys[i] : i == featureKeys.Length ? ResetKey : DumpKey;
-            bool pressed = (GetAsyncKeyState(key) & 0x8000) != 0;
-            if (pressed && !down[i] && buildOk)
-            {
-                if (i < featureKeys.Length && i < trainer.Features.Count)
-                    trainer.Features[i].Toggle();
-                else if (i == featureKeys.Length)
-                    reset = true;
-                else
-                    dumpMessage = $"Saved trace: {recorder.Dump()}";
-            }
-            down[i] = pressed;
+            bool pressed = featureKeys[i].IsDown();
+            if (pressed && !featureDown[i] && buildOk)
+                trainer.Features[i].Toggle();
+            featureDown[i] = pressed;
         }
+
+        bool resetPressed = Hotkeys.Reset.IsDown();
+        bool reset = resetPressed && !resetDown && buildOk;
+        resetDown = resetPressed;
+
+        bool tracePressed = Hotkeys.SaveTrace.IsDown();
+        if (tracePressed && !traceDown)
+            dumpMessage = $"Saved trace: {recorder.Dump()}";
+        traceDown = tracePressed;
 
         if (reset)
             trainer.ResetAll(game);
@@ -67,7 +66,7 @@ while (true)
         if (now - lastDraw >= DrawEveryMs)
         {
             lastDraw = now;
-            Draw(game, build, buildOk, trainer, dumpMessage);
+            Draw(game, build, buildOk, trainer, featureKeys, dumpMessage);
         }
         Thread.Sleep(TickMs);
     }
@@ -102,7 +101,7 @@ static GameProcess WaitForGame()
     }
 }
 
-static void Draw(GameProcess game, BuildInfo build, bool buildOk, Trainer trainer, string? dumpMessage)
+static void Draw(GameProcess game, BuildInfo build, bool buildOk, Trainer trainer, Hotkey[] featureKeys, string? dumpMessage)
 {
     Console.SetCursorPosition(0, 0);
     var lines = new List<string>
@@ -113,11 +112,13 @@ static void Draw(GameProcess game, BuildInfo build, bool buildOk, Trainer traine
         trainer.PlayerFound ? "Player: found" : "Player: not found (load a save; not in cutscene/menu)",
         "",
     };
+    if (!Hotkeys.NumLockOn)
+        lines.Add("!! NumLock is OFF - the numpad hotkeys will not work. Press NumLock.");
     for (int i = 0; i < trainer.Features.Count; i++)
-        lines.Add($"  F{i + 1}   [{(trainer.Features[i].Enabled ? "ON " : "off")}]  {trainer.Features[i].Name}" +
+        lines.Add($"  {featureKeys[i].Label,-14} [{(trainer.Features[i].Enabled ? "ON " : "off")}]  {trainer.Features[i].Name}" +
                   (trainer.Features[i].Warning is { } w ? $"   !! {w}" : ""));
-    lines.Add("  F12        Reset everything to default values");
-    lines.Add("  F11        Save the last 60 s of movement values to logs/trace-*.csv");
+    lines.Add($"  {Hotkeys.Reset.Label,-14}       Reset everything to default values");
+    lines.Add($"  {Hotkeys.SaveTrace.Label,-14}       Save the last 60 s of movement values to logs/trace-*.csv");
     lines.Add("");
     lines.AddRange(Diagnostics(game, trainer));
     lines.Add(dumpMessage ?? "");
@@ -158,9 +159,6 @@ static string[] Diagnostics(GameProcess game, Trainer trainer)
 
 partial class Program
 {
-    [DllImport("user32.dll")]
-    static extern short GetAsyncKeyState(int vKey);
-
     [DllImport("winmm.dll")]
     static extern uint timeBeginPeriod(uint period);
 }

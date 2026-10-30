@@ -8,17 +8,22 @@ different build.
 
 ## Features
 
+Hotkeys are on the numpad (the game uses the F keys), so **NumLock must be on**. When there are more than nine
+features, the next ones use Shift + Num1-Num9.
+
 | Key | Function | Status |
 |---|---|---|
-| F1 | Invulnerability | working |
-| F2 | Infinite stamina (no sprint exhaustion) | working |
-| F3 | Fast movement | working |
-| F4 | High jump | working |
-| F11 | Save the last 60 s of movement values to `logs/trace-*.csv` (debugging aid) | working |
-| F12 | Reset everything to the game's default values | working |
+| Num1 | Invulnerability | working |
+| Num2 | Infinite stamina (no sprint exhaustion) | working |
+| Num3 | Fast movement | working |
+| Num4 | High jump | working |
+| Num5 | Unlimited reserve ammo, medkits and throwables | ammo/reloads working; medkits and throwables untested |
+| Num6 | No filter drain / suffocation | untested |
+| Num7 | Infinite magazine (shoot without reloading) | working |
+| Num0 | Reset everything to the game's default values | working |
+| Num. | Save the last 60 s of movement values to `logs/trace-*.csv` (debugging aid) | working |
 
-Planned: infinite ammo and consumables (medkits, filters, grenades, knives, Molotovs, decoys), no reload,
-no recoil, rapid fire, battery and gas mask features, no clip, and more. See [docs/progress.md](docs/progress.md).
+Planned: more consumables (filters, materials, chemicals), no recoil, rapid fire, battery and gas mask features, no clip, and more. See [docs/progress.md](docs/progress.md).
 
 ## Running it
 
@@ -28,7 +33,7 @@ Requirements: Windows, the [.NET 10 SDK](https://dotnet.microsoft.com/download) 
 dotnet run --project src/MetroExodusTrainer.Cli
 ```
 
-Start the game and load a save (hotkeys are global, so they work while the game has focus). If the game runs
+Start the game and load a save (hotkeys are global, so they work while the game has focus; NumLock must be on). If the game runs
 as administrator, start the trainer as administrator too. Closing the trainer (Ctrl+C) restores the defaults.
 
 `src/MetroExodusTrainer.Probe` is a small read-only tool that prints the player pointer chain and a few values.
