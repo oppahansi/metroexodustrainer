@@ -65,6 +65,11 @@ def main(exe, symbols, out_path):
         if tid is not None and (cls == "weapon_magazined" or derives_from(pdb, tid, "weapon_magazined")):
             rows.extend((cls, rva) for rva in rvas)
 
+    pneumo = []
+    for cls, rva in rows:
+        tid = pdb.find(cls)
+        if cls == "weapon_pneumo" or (tid is not None and derives_from(pdb, tid, "weapon_pneumo")):
+            pneumo.append((cls, rva))
     devices = {out: sorted(found.get(cls, [])) for out, cls in DEVICES.items()}
 
     npc = []
@@ -92,6 +97,11 @@ def main(exe, symbols, out_path):
         f.write("public static class NpcVtables\n{\n")
         f.write("    public static readonly HashSet<long> Rvas =\n    [\n")
         for cls, rva in sorted(npc, key=lambda r: r[1]):
+            f.write(f"        0x{rva:X}, // {cls}\n")
+        f.write("    ];\n}\n")
+        f.write("\n/// <summary>Vtable RVAs of firearms that derive from weapon_pneumo (air pressure weapons).</summary>\n")
+        f.write("public static class PneumoWeaponVtables\n{\n    public static readonly HashSet<long> Rvas =\n    [\n")
+        for cls, rva in pneumo:
             f.write(f"        0x{rva:X}, // {cls}\n")
         f.write("    ];\n}\n")
         for out, rvas in devices.items():

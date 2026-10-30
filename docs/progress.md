@@ -21,6 +21,7 @@ Tested means confirmed working in the game (Epic build 2.0.1.1).
 | Unlimited crafting resources (stacks the game marks as craft resources, kept at 999) | materials verified in game, chemicals not yet |
 | Gas mask never breaks | implemented (mask health), not yet verified |
 | Unlimited flashlight & night vision charge | implemented (charger voltage), not yet verified |
+| Air weapons stay pressurized | implemented (pressure kept in the high band), not yet verified |
 | Weapons never get dirty | implemented (dirt half-float at weapon +0xB0), not yet verified |
 | Low enemy health | works (verified in game) |
 | Invisible to enemies | works (verified in game) |
@@ -36,7 +37,6 @@ Most of these need the inventory and weapon structures located first (see open q
 
 - Consumables: filters; verify throwing knives, hand grenades, decoys and Molotov cocktails
 - Gas mask: filter time, play without gas mask
-- Batteries and devices: "Hellbreath" charge, air bottle pressure
 - Enemies and world: freeze enemies, no clip (still need research)
 
 ## Infrastructure

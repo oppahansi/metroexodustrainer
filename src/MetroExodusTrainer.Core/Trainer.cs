@@ -26,7 +26,7 @@ public sealed class Trainer
         [
             new InfiniteMagazine { Slot = 7 }, new NoOverheat { Slot = 8 }, new NoJam { Slot = 9 },
             new NoRecoil { Slot = 10 }, new MaxAccuracy { Slot = 11 }, new RapidFire { Slot = 12 },
-            new AlwaysClean { Slot = 13 },
+            new AlwaysClean { Slot = 13 }, new AirPressureFull { Slot = 20 },
         ]),
         new("Enemies", [new Invisibility { Slot = 14 }, new LowEnemyHealth { Slot = 15 }, new Deafen { Slot = 16 }]),
         new("World", [new FreezeTimeOfDay { Slot = 17 }]),

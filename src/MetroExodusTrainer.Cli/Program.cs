@@ -197,6 +197,15 @@ if (args.Length > 0 && args[0] == "devices")
     return;
 }
 
+if (args.Length > 0 && args[0] == "pneumo")
+{
+    using var g = GameProcess.Attach() ?? throw new InvalidOperationException("game not running");
+    nint pl = g.ReadPointer(g.ReadPointer(g.Base + Offsets.GLevel) + 0x28);
+    foreach (nint w in Firearms.Find(g, pl))
+        Console.WriteLine($"gun 0x{w:X} vt=0x{g.ReadPointer(w) - g.Base:X} " + string.Join(" ", Enumerable.Range(0, 6).Select(i => g.Read<float>(w + 0x1B40 + i * 4).ToString("F3"))));
+    return;
+}
+
 var trainer = new Trainer();
 var featureKeys = trainer.Features.Select(f => Hotkeys.ForFeature(f.Slot)).ToArray();
 var featureDown = new bool[featureKeys.Length];

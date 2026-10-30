@@ -33,6 +33,16 @@ public static class Offsets
         public const nint DayEnd = 0x50;             // u64
     }
 
+    /// <summary>Air pressure of weapon_pneumo-derived firearms.</summary>
+    public static class Pneumo
+    {
+        public const nint Pressure = 0x1B40;         // float
+        public const nint RealPressure = 0x1B44;     // float
+        public const nint StaticParamsBias = 0x5C;   // static params block = *(weapon + 0x240) - 0x5C
+        public const nint HighBound = 0x13EC;        // bound above which the pressure counts as "high"
+        public const nint CapBound = 0x13F0;         // pressure cap
+    }
+
     /// <summary>The hand charger (electricity_controller) that powers the flashlight and night vision.</summary>
     public static class Charger
     {

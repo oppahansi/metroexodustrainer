@@ -799,6 +799,96 @@ public static class NpcVtables
     ];
 }
 
+/// <summary>Vtable RVAs of firearms that derive from weapon_pneumo (air pressure weapons).</summary>
+public static class PneumoWeaponVtables
+{
+    public static readonly HashSet<long> Rvas =
+    [
+        0x123B138, // weapon_flamethrower
+        0x123B0E0, // weapon_flamethrower
+        0x1239388, // weapon_flamethrower
+        0x1196DA8, // weapon_flamethrower
+        0x1239080, // weapon_flamethrower
+        0x1196D88, // weapon_flamethrower
+        0x1238A78, // weapon_flamethrower
+        0x1192C98, // weapon_flamethrower
+        0x115EA48, // weapon_flamethrower
+        0x1238A48, // weapon_flamethrower
+        0x11A4F78, // weapon_flamethrower
+        0x1196B00, // weapon_flamethrower
+        0x1236CB0, // weapon_flamethrower
+        0x1236B30, // weapon_flamethrower
+        0x1236B28, // weapon_flamethrower
+        0x1236AD8, // weapon_flamethrower
+        0x122F9D0, // weapon_gatling
+        0x11973B8, // weapon_gatling
+        0x122F0C0, // weapon_gatling
+        0x1196DA8, // weapon_gatling
+        0x115EA48, // weapon_gatling
+        0x1196D88, // weapon_gatling
+        0x11A4F78, // weapon_gatling
+        0x1192C98, // weapon_gatling
+        0x1196D30, // weapon_gatling
+        0x1196D00, // weapon_gatling
+        0x1196B80, // weapon_gatling
+        0x1196B00, // weapon_gatling
+        0x1196AB0, // weapon_gatling
+        0x1196A70, // weapon_gatling
+        0x122D290, // weapon_gatling
+        0x1196928, // weapon_gatling
+        0x1192C98, // weapon_hellbreath
+        0x115EA48, // weapon_hellbreath
+        0x1247318, // weapon_hellbreath
+        0x11A4F78, // weapon_hellbreath
+        0x1247310, // weapon_hellbreath
+        0x12472B8, // weapon_hellbreath
+        0x12455A0, // weapon_hellbreath
+        0x1245560, // weapon_hellbreath
+        0x12453E0, // weapon_hellbreath
+        0x12453D8, // weapon_hellbreath
+        0x1245388, // weapon_hellbreath
+        0x1196DA8, // weapon_hellbreath
+        0x1245248, // weapon_hellbreath
+        0x1196D88, // weapon_hellbreath
+        0x1244C40, // weapon_hellbreath
+        0x11CFE18, // weapon_hellbreath
+        0x1196B00, // weapon_hellbreath
+        0x1242D60, // weapon_hellbreath
+        0x1234730, // weapon_helsing
+        0x11973B8, // weapon_helsing
+        0x1233DD0, // weapon_helsing
+        0x1196DA8, // weapon_helsing
+        0x115EA48, // weapon_helsing
+        0x1196D88, // weapon_helsing
+        0x11A4F78, // weapon_helsing
+        0x1192C98, // weapon_helsing
+        0x1196D30, // weapon_helsing
+        0x1196D00, // weapon_helsing
+        0x1231F38, // weapon_helsing
+        0x1196B00, // weapon_helsing
+        0x1196AB0, // weapon_helsing
+        0x1231EF8, // weapon_helsing
+        0x1231DB8, // weapon_helsing
+        0x1196928, // weapon_helsing
+        0x12320B8, // weapon_tihar
+        0x11973B8, // weapon_tihar
+        0x12317B0, // weapon_tihar
+        0x1196DA8, // weapon_tihar
+        0x115EA48, // weapon_tihar
+        0x1196D88, // weapon_tihar
+        0x11A4F78, // weapon_tihar
+        0x1192C98, // weapon_tihar
+        0x1231758, // weapon_tihar
+        0x1231728, // weapon_tihar
+        0x122F850, // weapon_tihar
+        0x1196B00, // weapon_tihar
+        0x1196AB0, // weapon_tihar
+        0x122F810, // weapon_tihar
+        0x122F6D0, // weapon_tihar
+        0x122F6C8, // weapon_tihar
+    ];
+}
+
 /// <summary>Vtable RVAs of gasmask entities.</summary>
 public static class GasmaskVtables
 {

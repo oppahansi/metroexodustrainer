@@ -1,3 +1,5 @@
+using MetroExodusTrainer.Core.Generated;
+
 namespace MetroExodusTrainer.Core.Features;
 
 /// <summary>Writes the same value into a field of every firearm in the inventory each tick.</summary>
@@ -34,6 +36,37 @@ public sealed class AlwaysClean : WeaponFieldFeature
     {
         if (game.TryRead<ushort>(weapon + Offsets.Weapon.Dirt, out var dirt) && dirt != 0)
             game.Write<ushort>(weapon + Offsets.Weapon.Dirt, 0);
+    }
+}
+
+/// <summary>
+/// Keeps the air pressure of pneumatic weapons (Tikhar, Hellbreath, Helsing, ...) in the high band, so they never need
+/// pumping. The weapon's static data holds three bounds (low, high, cap); the pressure is only ever raised to the middle
+/// of the high band and the bounds must look sane first.
+/// </summary>
+public sealed class AirPressureFull : WeaponFieldFeature
+{
+    public override string Name => "Air weapons stay pressurized";
+
+    protected override void ApplyTo(GameProcess game, nint weapon)
+    {
+        if (!PneumoWeaponVtables.Rvas.Contains(game.ReadPointer(weapon) - game.Base))
+            return;
+
+        nint parameters = game.ReadPointer(weapon + Offsets.Inventory.EntityStaticParams);
+        if (parameters == 0)
+            return;
+
+        nint block = parameters - Offsets.Pneumo.StaticParamsBias;
+        if (!game.TryRead<float>(block + Offsets.Pneumo.HighBound, out var high) ||
+            !game.TryRead<float>(block + Offsets.Pneumo.CapBound, out var cap) ||
+            !(high > 0f && cap > high && cap < 1000f))
+            return;
+
+        float target = high + (cap - high) * 0.5f;
+        foreach (nint field in new[] { weapon + Offsets.Pneumo.Pressure, weapon + Offsets.Pneumo.RealPressure })
+            if (game.TryRead<float>(field, out var current) && current >= 0f && current < target)
+                game.Write(field, target);
     }
 }
 

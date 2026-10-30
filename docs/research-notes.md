@@ -164,6 +164,11 @@ All fields are on the `weapon_magazined`-derived entity found through the invent
   (180/300 seen). The hand charger (`electricity_controller`) powers the flashlight and night vision: `_target_voltage` `+0xB58` and
   `_voltage` `+0xB5C`, 0..1. Hotkey slots are fixed per feature (`Feature.Slot`), so adding a feature never moves existing keys.
 
+- **Air pressure:** weapons deriving from `weapon_pneumo` (Tikhar, Hellbreath, Helsing, flamethrower, gatling) keep `_pressure` at
+  `+0x1B40` and `_real_pressure` at `+0x1B44`. `pressure_bound(mode)` reads three bounds from the static params block
+  (`*(weapon+0x240) - 0x5C`, at `+0x13E8` low, `+0x13EC` high, `+0x13F0` cap). Hellbreath is a pneumatic weapon, so it is covered by
+  this and by the infinite magazine.
+
 ### Defaults and reset (Num0)
 Values captured when a feature is switched on can be stale if an earlier run was closed with the feature on.
 Num0 therefore writes real defaults, whether or not the feature is on:
