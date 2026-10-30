@@ -18,6 +18,8 @@ sealed class TraceRecorder
         "cur_walk", "cur_run", "cur_sprint", "cur_crouch",
         "tgt_walk", "tgt_run", "tgt_sprint", "tgt_crouch",
         "allow_walk", "allow_run", "allow_sprint", "allow_crouch", "allow_jump",
+        "mod_count", "mod_cur", "mod_tgt", "mod_blend", "static_base",
+        "p_e08", "p_e0c", "p_e10", "p_e14", "p_e1c", "p_e20",
     ];
 
     private readonly string[] _rows = new string[Capacity];
@@ -54,6 +56,32 @@ sealed class TraceRecorder
         for (int i = 0; i < 4; i++) F(player + Offsets.Player.VsSpeed + i * 4);
         for (int i = 0; i < 4; i++) F(player + Offsets.Player.VsSpeedTarget + i * 4);
         for (int i = 0; i < 5; i++) B(player + Offsets.Player.VsMoveAllowed + i);
+
+
+        // Speed-modifier stack: the top entry is the active base speed.
+        game.TryRead<ushort>(player + Offsets.Player.SpeedModCount, out var modCount);
+        sb.Append(',').Append(modCount);
+        nint modArray = game.ReadPointer(player + Offsets.Player.SpeedModArray);
+        if (modCount > 0 && modArray != 0)
+        {
+            nint top = modArray + (modCount - 1) * 24;
+            F(top); F(top + 4); F(top + 8);
+        }
+        else
+        {
+            sb.Append(",,,");
+        }
+        nint prm = game.ReadPointer(player + Offsets.Player.StaticParams);
+        if (prm != 0)
+        {
+            F(prm + Offsets.Player.StaticBaseSpeed);
+            foreach (nint off in new nint[] { 0xE08, 0xE0C, 0xE10, 0xE14, 0xE1C, 0xE20 })
+                F(prm + off);
+        }
+        else
+        {
+            sb.Append(",,,,,,,");
+        }
 
         _rows[_next] = sb.ToString();
         _next = (_next + 1) % Capacity;

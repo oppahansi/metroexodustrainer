@@ -26,6 +26,10 @@ public static class Offsets
     public static class Player
     {
         public const nint Health = 0x3B8;
+        public const nint StaticParams = 0x240;      // pointer to per-entity static params
+        public const nint StaticBaseSpeed = 0xE04;   // float inside static params; base speed when the mod stack is empty
+        public const nint SpeedModArray = 0x2548;    // pointer to vs_speed_mod entries (24 bytes: current, target, blend, ?, block*)
+        public const nint SpeedModCount = 0x2552;    // u16 size of the stack; the top entry is the active base speed
         public const nint EvadeState = 0x1491;
         public const nint MoveSpeed = 0x14A0;
         public const nint AnimSpeedCoef = 0xFB0;

@@ -65,3 +65,8 @@ Siblings: `_startup_entity` +0x20, `_view_entity` +0x30.
 - `update_xform` forces each `_vs_speed` multiplier's target to 0 when its allowed byte is 0, and `can_sprint` fails while `_vs_speed.sprint <= 0`.
 - Observed live: while "exhausted" stamina=1.0, `can_use`=1, `_vs_speed` sprint=0.0 with target 1.0. The infinite stamina feature therefore also keeps the sprint-allowed byte set.
 - The game's default `g_player_speed_scale` is 1.25, not 1.0.
+
+## Sprint slowdown trace (first capture, 2.0.1.1)
+- `_move_speed` (+0x14a0) is the *measured* velocity of the physics body (written by `simulate_accel_physic`), not a setting.
+- With infinite stamina on, a 14 s sprint held 7.31 then dropped to ~4.9 (x0.667) while stamina, state flags, `_vs_speed`, `_vs_move_allowed` all stayed unchanged.
+- Base speed comes from `_vs_speed_mod` (+0x2548 array of 24-byte `{current,target,blend,?,block*}`, u16 count at +0x2552): the top entry, or the static-params float at `[+0x240]+0xe04` when empty. Scripts push entries via `vs_actor_movement_ex_set` (RVA `0xa4cbd0`).
