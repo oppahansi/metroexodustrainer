@@ -1,13 +1,13 @@
 namespace MetroExodusTrainer.Core.Features;
 
 /// <summary>
-/// Stops the in-game clock by holding the day cycle's speed multiplier (the value scripted_speed::speed returns)
-/// at 0. The multiplier is only touched when the day cycle looks valid (day end after day start, speed in a sane
-/// range), and the default is 1.
+/// Stops the in-game clock by holding the day cycle's base speed multiplier (game seconds per real second,
+/// 12 in the main game) at 0. It is only touched when the day cycle looks valid (day end after day start, value in a
+/// sane range); the value seen when the feature was switched on is put back afterwards.
 /// </summary>
 public sealed class FreezeTimeOfDay : Feature
 {
-    private const float DefaultSpeed = 1f;
+    private const float DefaultSpeed = 12f;
     private const float MaxSaneSpeed = 1000f;
 
     private float _original = DefaultSpeed;
@@ -52,10 +52,10 @@ public sealed class FreezeTimeOfDay : Feature
         if (!game.TryRead<ulong>(cycle + Offsets.World.DayStart, out var start) ||
             !game.TryRead<ulong>(cycle + Offsets.World.DayEnd, out var end) || end <= start)
             return false;
-        if (!game.TryRead<float>(cycle + Offsets.World.DaySpeed, out var speed) || float.IsNaN(speed) || speed < 0f || speed > MaxSaneSpeed)
+        if (!game.TryRead<float>(cycle + Offsets.World.DayBaseMult, out var speed) || float.IsNaN(speed) || speed < 0f || speed > MaxSaneSpeed)
             return false;
 
-        speedAddress = cycle + Offsets.World.DaySpeed;
+        speedAddress = cycle + Offsets.World.DayBaseMult;
         return true;
     }
 }

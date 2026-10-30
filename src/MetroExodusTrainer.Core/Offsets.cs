@@ -28,7 +28,7 @@ public static class Offsets
     {
         public const nint GGame = 0x1691C08;         // pointer to the game object (cgame, derives from igame)
         public const nint DayCycle = 0xD200;         // igame::_day_cycle
-        public const nint DaySpeed = 0x0;            // float, scripted_speed::speed() = the clock speed multiplier (1.0)
+        public const nint DayBaseMult = 0x58;        // float, game seconds per real second (12); 0 stops the clock. The float at +0x0 is recomputed every frame
         public const nint DayStart = 0x48;           // u64
         public const nint DayEnd = 0x50;             // u64
     }

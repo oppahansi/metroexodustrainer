@@ -45,7 +45,7 @@ if (args.Length > 0 && args[0] == "clock")
     nint dc = g.ReadPointer(g.Base + Offsets.World.GGame) + Offsets.World.DayCycle;
     for (int i = 0; i < 6; i++)
     {
-        Console.WriteLine($"speed={g.Read<float>(dc + Offsets.World.DaySpeed)} game_time={g.Read<ulong>(dc + 0x38)} base_mult={g.Read<float>(dc + 0x58)}");
+        Console.WriteLine($"start={g.Read<ulong>(dc + Offsets.World.DayStart)} end={g.Read<ulong>(dc + Offsets.World.DayEnd)} speed={g.Read<float>(dc)} game_time={g.Read<ulong>(dc + 0x38)} base_mult={g.Read<float>(dc + 0x58)}");
         Thread.Sleep(1000);
     }
     return;
