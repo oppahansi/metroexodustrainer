@@ -22,6 +22,9 @@ public static class Offsets
     /// </summary>
     public const nint SprintAllowedStore = 0xA4CDA2;
 
+    /// <summary>RVA of cplayer::vs_actor_movement_ex_reset(owner block in rdx), which removes script speed modifiers.</summary>
+    public const nint MovementExReset = 0xA4C9A0;
+
     public static class Level
     {
         public const nint StartupEntity = 0x20;

@@ -90,3 +90,8 @@ Siblings: `_startup_entity` +0x20, `_view_entity` +0x30.
 ## Why a re-created ownerless boost entry vanished (fifth capture)
 - `update_xform` (RVA `0x82fa10`, near `0x82fd39`) removes the top speed-modifier entry when the stack has exactly one entry, its owner (`[entry+0x10]`) is null and `|current - target| < eps`.
 - A re-created entry therefore needs the owner of the original boost entry (recorded while the boost was active). On sprint release the trainer sets target = 1.0 and clears the owner so the game ramps it down and removes it.
+
+## Re-creating the entry is impossible; suppress its removal instead (sixth capture)
+- Observed warning: "modifier stack not allocated". When the last `_vs_speed_mod` entry is removed the vector releases its storage (`_array` null / capacity 0), so there is nothing to write back into.
+- `cplayer::vs_actor_movement_ex_reset` (RVA `0xa4c9a0`) starts with 17 bytes of whole instructions: `40 55 56 41 56 48 83 ec 40 44 0f b7 89 52 25 00 00`. Infinite stamina overwrites them with a 14-byte absolute `jmp` to a stub that returns immediately when `[rcx+0x1d50] & 0x400` (sprint held) and `rdx` equals the recorded boost-block owner, and otherwise runs the displaced instructions and jumps back to `+17`. The hook only installs when those exact bytes are present and is reverted on disable/exit.
+- When sprint ends, the trainer sets the surviving boost entry's target to 1.0 and clears its owner so `update_xform` ramps it down and removes it.

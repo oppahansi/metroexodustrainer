@@ -30,13 +30,16 @@ public sealed class Invulnerability : Feature
 }
 
 /// <summary>
-/// Stops stamina drain and exhaustion. The freeze flag makes update_stamina take its regeneration path,
-/// stamina is topped up every tick to cover jump costs, and the "can use stamina" flag (which use_stamina
-/// clears when exhausted, blocking fast running and jumping until a timer fires) is kept set.
-/// The exhaustion script also revokes sprint through the "movement allowed" bytes, which makes the
-/// sprint speed multiplier 0 even with full stamina, so that byte is kept set too.
-/// Finally, sprinting pushes a speed modifier (target 1.5) that the game flips back to 1.0 after ~13 s,
-/// which is the slowdown players call exhaustion; while sprint is held the boost target is put back.
+/// Stops stamina drain and the sprint "exhaustion". Stamina itself is not what ends a long sprint:
+/// <list type="bullet">
+/// <item>The freeze flag makes update_stamina take its regeneration path; stamina is topped up every tick and the
+/// "can use stamina" flag (cleared by use_stamina when exhausted) is kept set.</item>
+/// <item>The exhaustion script clears the sprint-allowed byte for a frame, which zeroes the sprint multiplier and
+/// cancels the sprint before any external write can intervene, so the store of that byte is disabled.</item>
+/// <item>Sprinting pushes a speed modifier (target 1.5) that a script block removes after ~13 s, which is the
+/// slowdown players feel. While sprint is held that block's removal is suppressed by a hook, and the entry is
+/// released again when sprint ends.</item>
+/// </list>
 /// </summary>
 public sealed class InfiniteStamina : Feature
 {
@@ -44,19 +47,17 @@ public sealed class InfiniteStamina : Feature
 
     private bool _origFreeze;
     private float _boost = 1f;       // highest sprint-boost target seen while sprinting
-    private float _blend = 10f;      // blend rate of the boost entry, copied when re-creating it
-    private long _owner;             // script block that owns the boost entry; update_xform removes owner-less settled entries
     private float _lastTarget = 1f;  // top modifier target on the previous tick
-    private bool _forced;            // we overrode or re-created the boost entry and must give it back
-    private bool _hadBoost;          // the boost was active earlier in the sprint that is currently held
-    private int _heldTicks;          // consecutive ticks with the sprint flag set
+    private long _owner;            // script block that owns the boost entry
+    private bool _forced;            // we put the boost target back after the game lowered it
+    private bool _hadBoost;          // the boost entry was seen during the sprint that is currently held
 
-    // Sprint-allowed script: it clears the sprint-allowed byte for a frame; update_xform then zeroes the sprint
-    // multiplier and can_sprint fails before any external write can intervene, so the store is disabled.
     private readonly CodePatch _sprintAllowedPatch = new(
         "sprint-allowed store", Offsets.SprintAllowedStore,
         expected: [0x88, 0x81, 0x2A, 0x25, 0x00, 0x00],
         replacement: [0x90, 0x90, 0x90, 0x90, 0x90, 0x90]);
+
+    private readonly SprintBoostHook _boostHook = new();
 
     public override string Name => "Infinite stamina";
 
@@ -64,11 +65,12 @@ public sealed class InfiniteStamina : Feature
     {
         _origFreeze = game.Read<byte>(player + Offsets.Player.StaminaFreeze) != 0;
         _boost = _lastTarget = 1f;
-        _blend = 10f;
         _owner = 0;
         _forced = _hadBoost = false;
-        _heldTicks = 0;
-        Warning = _sprintAllowedPatch.TryApply(game) ? null : _sprintAllowedPatch.Error;
+
+        Warning = !_sprintAllowedPatch.TryApply(game) ? _sprintAllowedPatch.Error
+                : !_boostHook.TryApply(game) ? _boostHook.Error
+                : null;
     }
 
     protected override void Apply(GameProcess game, nint player)
@@ -80,10 +82,6 @@ public sealed class InfiniteStamina : Feature
         KeepSprintBoost(game, player);
     }
 
-    /// <summary>
-    /// Sprinting runs a script block that pushes a speed modifier (target 1.5) and, after ~13 s, either sets its
-    /// target back to 1.0 or removes it outright. While sprint is held that modifier is kept (or re-created).
-    /// </summary>
     private void KeepSprintBoost(GameProcess game, nint player)
     {
         bool sprinting = game.TryRead<uint>(player + Offsets.Player.StateReal, out var state) &&
@@ -92,73 +90,39 @@ public sealed class InfiniteStamina : Feature
 
         if (!sprinting)
         {
-            // Sprint released: hand control back to the game if we were holding the boost.
-            if (_forced && target != 0)
+            // Sprint ended: the hook may have kept the boost entry alive, so let the game finish it
+            // (ramp down and remove) if it is still boosted.
+            if (target != 0 && game.TryRead<float>(target, out var v) && v > 1f + Epsilon && (_hadBoost || _forced))
                 ReleaseBoost(game, target);
             _forced = _hadBoost = false;
             _lastTarget = 1f;
-            _heldTicks = 0;
             return;
         }
 
-        _heldTicks++;
-
-        if (target == 0)
+        if (target == 0 || !game.TryRead<float>(target, out var value))
         {
-            // The game removed the boost while sprint is still held (debounced so a fresh sprint can push its own).
-            if (_hadBoost && _heldTicks >= 5)
-                RecreateBoost(game, player);
             _lastTarget = 1f;
             return;
         }
-
-        if (!game.TryRead<float>(target, out var value))
-            return;
 
         if (value > 1f + Epsilon)
         {
             _boost = Math.Max(_boost, value);
             _hadBoost = true;
-            if (game.TryRead<float>(target + 4, out var blend) && blend > 0f)
-                _blend = blend;
-            if (game.TryRead<long>(target + 12, out var owner) && owner != 0)
+            if (game.TryRead<long>(target + 12, out var owner) && owner != 0 && owner != _owner)
+            {
                 _owner = owner;
+                _boostHook.SetOwner(game, owner);
+            }
         }
         else if (_forced || (_boost > 1f + Epsilon && _lastTarget > 1f + Epsilon && Math.Abs(value - 1f) < Epsilon))
         {
-            // The game just ended the sprint boost while sprint is still held: keep it.
+            // The game lowered the boost target while sprint is still held: put it back.
             game.Write(target, _boost);
             _forced = true;
             value = _boost;
         }
         _lastTarget = value;
-    }
-
-    /// <summary>Re-creates the removed boost as the only stack entry (no script owner), at full strength.</summary>
-    private void RecreateBoost(GameProcess game, nint player)
-    {
-        nint array = game.ReadPointer(player + Offsets.Player.SpeedModArray);
-        if (array == 0 || !game.TryRead<ushort>(player + Offsets.Player.SpeedModCapacity, out var capacity) || capacity < 1)
-        {
-            Warning = "could not restore the sprint boost (modifier stack not allocated)";
-            return;
-        }
-
-        if (_owner == 0)
-        {
-            // Without an owner the game removes the settled entry on the very next frame.
-            Warning = "could not restore the sprint boost (owner of the entry was not seen)";
-            return;
-        }
-
-        game.Write(array, _boost);            // current
-        game.Write(array + 4, _boost);        // target
-        game.Write(array + 8, _blend);        // blend
-        game.Write(array + 12, 0f);
-        game.Write<long>(array + 16, _owner); // same script block as the original entry; its next reset removes this one
-        game.Write<ushort>(player + Offsets.Player.SpeedModCount, 1);
-        _forced = true;
-        _lastTarget = _boost;
     }
 
     /// <summary>Lets the game finish the boost: target back to 1.0 and no owner, so update_xform ramps it down and removes it.</summary>
@@ -180,14 +144,19 @@ public sealed class InfiniteStamina : Feature
     protected override void Restore(GameProcess game, nint player)
     {
         game.Write<byte>(player + Offsets.Player.StaminaFreeze, _origFreeze ? (byte)1 : (byte)0);
-        if (_forced && TopModifierTarget(game, player) is var t and not 0)
+        if (TopModifierTarget(game, player) is var t and not 0 && game.TryRead<float>(t, out var v) && v > 1f + Epsilon)
             ReleaseBoost(game, t);
-        _forced = false;
+        _forced = _hadBoost = false;
         _sprintAllowedPatch.Revert(game);
+        _boostHook.Revert(game);
         Warning = null;
     }
 
-    protected override void OnShutdown(GameProcess game) => _sprintAllowedPatch.Revert(game);
+    protected override void OnShutdown(GameProcess game)
+    {
+        _sprintAllowedPatch.Revert(game);
+        _boostHook.Revert(game);
+    }
 }
 
 /// <summary>Writes a float field every tick and restores the value it found when switched on.</summary>

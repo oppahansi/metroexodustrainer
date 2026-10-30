@@ -76,6 +76,10 @@ public sealed class GameProcess : IDisposable
         return ok;
     }
 
+    /// <summary>Allocates a read/write/execute block in the game process; 0 on failure. Blocks are never freed.</summary>
+    public nint AllocExecutable(int size) =>
+        NativeMethods.VirtualAllocEx(_handle, 0, size, NativeMethods.MemCommitReserve, NativeMethods.PageExecuteReadWrite);
+
     public bool GetBit(nint address, int bit) => (Read<byte>(address) & (1 << bit)) != 0;
 
     /// <summary>Sets or clears one bit of a byte, leaving the other bits untouched.</summary>

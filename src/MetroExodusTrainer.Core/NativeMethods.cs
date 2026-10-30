@@ -21,6 +21,10 @@ internal static partial class NativeMethods
     public static unsafe partial bool ReadProcessMemory(nint process, nint address, void* buffer, nint size, out nint read);
 
     public const uint PageExecuteReadWrite = 0x40;
+    public const uint MemCommitReserve = 0x3000;
+
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    public static partial nint VirtualAllocEx(nint process, nint address, nint size, uint allocationType, uint protect);
 
     [LibraryImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
