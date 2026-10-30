@@ -27,7 +27,7 @@ features, the next ones use Ctrl + Num1-Num9, then Alt + Num1-Num9.
 | Ctrl+Num3 | Rapid fire (half the time between shots) | working |
 | Ctrl+Num4 | Invisible to enemies (they stop targeting you) | works |
 | Ctrl+Num5 | Low enemy health (hostile NPCs die in one hit) | works |
-| Ctrl+Num6 | Freeze time of day | untested |
+| Ctrl+Num6 | Freeze time of day | works |
 | Num0 | Reset everything to the game's default values | working |
 
 Planned: more consumables (filters, materials, chemicals), always-clean weapons, no scope sway, battery and gas mask features, no clip, and more. See [docs/progress.md](docs/progress.md).
