@@ -19,7 +19,7 @@ features, the next ones use Ctrl + Num1-Num9, then Alt + Num1-Num9.
 | Num4 | High jump | working |
 | Num5 | Unlimited reserve ammo (reloads work, stacks filled to the carry limit), medkits and throwables | works |
 | Num6 | No filter drain / suffocation | untested |
-| Num7 | Unlimited crafting resources (materials and chemicals kept at 999) | untested |
+| Num7 | Unlimited crafting resources (materials and chemicals kept at 999) | materials work |
 | Num8 | Infinite magazine (shoot without reloading) | working |
 | Num9 | No weapon overheat | working |
 | Ctrl+Num1 | No weapon jam | working |

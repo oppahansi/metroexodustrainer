@@ -18,7 +18,7 @@ Tested means confirmed working in the game (Epic build 2.0.1.1).
 | No recoil | tested (code patch) |
 | Maximum accuracy | tested (code patch) |
 | Rapid fire | tested (hook) |
-| Unlimited crafting resources (stacks the game marks as craft resources, kept at 999) | implemented, not yet verified |
+| Unlimited crafting resources (stacks the game marks as craft resources, kept at 999) | materials verified in game, chemicals not yet |
 | Weapons never get dirty | implemented (dirt half-float at weapon +0xB0), not yet verified |
 | Low enemy health | works (verified in game) |
 | Invisible to enemies | works (verified in game) |
