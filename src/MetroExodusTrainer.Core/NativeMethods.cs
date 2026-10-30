@@ -20,6 +20,16 @@ internal static partial class NativeMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     public static unsafe partial bool ReadProcessMemory(nint process, nint address, void* buffer, nint size, out nint read);
 
+    public const uint PageExecuteReadWrite = 0x40;
+
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool VirtualProtectEx(nint process, nint address, nint size, uint newProtect, out uint oldProtect);
+
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool FlushInstructionCache(nint process, nint address, nint size);
+
     [LibraryImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static unsafe partial bool WriteProcessMemory(nint process, nint address, void* buffer, nint size, out nint written);

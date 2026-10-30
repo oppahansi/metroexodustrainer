@@ -24,6 +24,8 @@ public sealed class Trainer
         foreach (var feature in Features)
             feature.Set(false);
         Tick(game);
+        foreach (var feature in Features)
+            feature.Shutdown(game);
     }
 
     public void Tick(GameProcess game)

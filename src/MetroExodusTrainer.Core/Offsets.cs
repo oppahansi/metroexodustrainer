@@ -16,6 +16,12 @@ public static class Offsets
     /// <summary>RVA of the float inside the g_player_speed_scale console variable; multiplied into movement speed.</summary>
     public const nint PlayerSpeedScale = 0x163DCE8;
 
+    /// <summary>
+    /// RVA of the instruction in cplayer::vs_actor_movement_allowed_set that stores the sprint-allowed byte
+    /// (mov [rcx+0x252a], al = 88 81 2a 25 00 00).
+    /// </summary>
+    public const nint SprintAllowedStore = 0xA4CDA2;
+
     public static class Level
     {
         public const nint StartupEntity = 0x20;

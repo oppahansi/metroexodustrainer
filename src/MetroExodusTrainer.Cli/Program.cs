@@ -114,7 +114,8 @@ static void Draw(GameProcess game, BuildInfo build, bool buildOk, Trainer traine
         "",
     };
     for (int i = 0; i < trainer.Features.Count; i++)
-        lines.Add($"  F{i + 1}   [{(trainer.Features[i].Enabled ? "ON " : "off")}]  {trainer.Features[i].Name}");
+        lines.Add($"  F{i + 1}   [{(trainer.Features[i].Enabled ? "ON " : "off")}]  {trainer.Features[i].Name}" +
+                  (trainer.Features[i].Warning is { } w ? $"   !! {w}" : ""));
     lines.Add("  F12        Reset everything to default values");
     lines.Add("  F11        Save the last 60 s of movement values to logs/trace-*.csv");
     lines.Add("");

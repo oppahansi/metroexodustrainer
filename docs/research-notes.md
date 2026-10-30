@@ -75,3 +75,8 @@ Siblings: `_startup_entity` +0x20, `_view_entity` +0x30.
 - Sprinting pushes a `_vs_speed_mod` entry whose target ramps 1.0 -> 1.5 (blend 10). About 13 s later, with the sprint flag (`_state_real & 0x400`) still set, the game switches that target back to 1.0; the speed eases down and the entry is popped. 7.31 -> 4.88 equals 1/1.5.
 - Stamina, `_can_use_stamina`, `_vs_speed`, and `_vs_move_allowed` are unchanged during it, so stamina is not involved.
 - Infinite stamina therefore re-asserts the boost target while sprint is held, and releases it as soon as sprint is released.
+
+## Why external writes could not stop the sprint cut-off (third capture)
+- At the moment the boost is lost, `cur_sprint` (+0x24f8) reads 0 for a single sample while its target, the allowed byte, stamina and `can_use` all read normal.
+- `update_xform` sets the current multiplier to 0 in the same frame the script clears `_vs_move_allowed[sprint]`, and `process_input` (RVA `0x8d0610`) drops the sprint flag whenever `can_sprint` fails. An external write 10 ms later is too late.
+- Infinite stamina therefore patches the store in `vs_actor_movement_allowed_set` (RVA `0xa4cda2`, `88 81 2a 25 00 00` -> six NOPs), only when those exact bytes are present, and reverts it when switched off or on exit.

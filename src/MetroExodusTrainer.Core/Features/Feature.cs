@@ -6,6 +6,9 @@ public abstract class Feature
     public abstract string Name { get; }
     public bool Enabled { get; private set; }
 
+    /// <summary>Set when the feature could not fully apply (for example, a code patch was refused).</summary>
+    public string? Warning { get; protected set; }
+
     /// <summary>False for features that only touch globals, so they keep working (and restore) without a player entity.</summary>
     public virtual bool NeedsPlayer => true;
 
@@ -20,6 +23,11 @@ public abstract class Feature
 
     private bool _needsEnable;
     private bool _needsRestore;
+
+    /// <summary>Last chance to undo changes that are not tied to the player entity, e.g. code patches.</summary>
+    internal void Shutdown(GameProcess game) => OnShutdown(game);
+
+    protected virtual void OnShutdown(GameProcess game) { }
 
     public void Toggle() => Set(!Enabled);
 

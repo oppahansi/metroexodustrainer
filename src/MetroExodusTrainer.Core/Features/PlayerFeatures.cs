@@ -47,6 +47,13 @@ public sealed class InfiniteStamina : Feature
     private float _lastTarget = 1f;  // top modifier target on the previous tick
     private bool _forced;            // we overrode a target to _boost and must give it back
 
+    // The exhaustion script clears the sprint-allowed byte for a frame; update_xform then zeroes the sprint
+    // multiplier and can_sprint fails before any external write can intervene, so the store is disabled.
+    private readonly CodePatch _sprintAllowedPatch = new(
+        "sprint-allowed store", Offsets.SprintAllowedStore,
+        expected: [0x88, 0x81, 0x2A, 0x25, 0x00, 0x00],
+        replacement: [0x90, 0x90, 0x90, 0x90, 0x90, 0x90]);
+
     public override string Name => "Infinite stamina";
 
     protected override void OnEnable(GameProcess game, nint player)
@@ -54,6 +61,7 @@ public sealed class InfiniteStamina : Feature
         _origFreeze = game.Read<byte>(player + Offsets.Player.StaminaFreeze) != 0;
         _boost = _lastTarget = 1f;
         _forced = false;
+        Warning = _sprintAllowedPatch.TryApply(game) ? null : _sprintAllowedPatch.Error;
     }
 
     protected override void Apply(GameProcess game, nint player)
@@ -119,7 +127,11 @@ public sealed class InfiniteStamina : Feature
         if (_forced && TopModifierTarget(game, player) is var t and not 0)
             game.Write(t, 1f);
         _forced = false;
+        _sprintAllowedPatch.Revert(game);
+        Warning = null;
     }
+
+    protected override void OnShutdown(GameProcess game) => _sprintAllowedPatch.Revert(game);
 }
 
 /// <summary>Writes a float field every tick and restores the value it found when switched on.</summary>

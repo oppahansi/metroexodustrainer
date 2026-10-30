@@ -52,6 +52,30 @@ public sealed class GameProcess : IDisposable
     public unsafe bool Write<T>(nint address, T value) where T : unmanaged =>
         NativeMethods.WriteProcessMemory(_handle, address, &value, sizeof(T), out var written) && written == sizeof(T);
 
+    public unsafe byte[]? ReadBytes(nint address, int count)
+    {
+        var buffer = new byte[count];
+        fixed (byte* p = buffer)
+        {
+            return NativeMethods.ReadProcessMemory(_handle, address, p, count, out var read) && read == count ? buffer : null;
+        }
+    }
+
+    /// <summary>Writes into executable memory: lifts the page protection, writes, restores it and flushes the CPU cache.</summary>
+    public unsafe bool WriteCode(nint address, byte[] bytes)
+    {
+        if (!NativeMethods.VirtualProtectEx(_handle, address, bytes.Length, NativeMethods.PageExecuteReadWrite, out var old))
+            return false;
+        bool ok;
+        fixed (byte* p = bytes)
+        {
+            ok = NativeMethods.WriteProcessMemory(_handle, address, p, bytes.Length, out var written) && written == bytes.Length;
+        }
+        NativeMethods.VirtualProtectEx(_handle, address, bytes.Length, old, out _);
+        NativeMethods.FlushInstructionCache(_handle, address, bytes.Length);
+        return ok;
+    }
+
     public bool GetBit(nint address, int bit) => (Read<byte>(address) & (1 << bit)) != 0;
 
     /// <summary>Sets or clears one bit of a byte, leaving the other bits untouched.</summary>
