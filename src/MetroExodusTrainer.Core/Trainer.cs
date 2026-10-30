@@ -2,24 +2,26 @@ using MetroExodusTrainer.Core.Features;
 
 namespace MetroExodusTrainer.Core;
 
+/// <summary>A named category of features.</summary>
+public sealed record FeatureGroup(string Name, IReadOnlyList<Feature> Features);
+
 /// <summary>Owns the feature list and applies enabled features against the attached game.</summary>
 public sealed class Trainer
 {
-    public IReadOnlyList<Feature> Features { get; } =
+    /// <summary>Features by category, in display order. Hotkey slots follow this order.</summary>
+    public IReadOnlyList<FeatureGroup> Groups { get; } =
     [
-        new Invulnerability(),
-        new InfiniteStamina(),
-        new FastMovement(),
-        new HighJump(),
-        new UnlimitedItems(),
-        new FreeGasMask(),
-        new InfiniteMagazine(),
-        new NoOverheat(),
-        new NoJam(),
-        new NoRecoil(),
-        new MaxAccuracy(),
-        new RapidFire(),
+        new("Player", [new Invulnerability(), new InfiniteStamina(), new FastMovement(), new HighJump()]),
+        new("Items", [new UnlimitedItems(), new FreeGasMask()]),
+        new("Weapons",
+        [
+            new InfiniteMagazine(), new NoOverheat(), new NoJam(), new NoRecoil(), new MaxAccuracy(), new RapidFire(),
+        ]),
     ];
+
+    public IReadOnlyList<Feature> Features { get; }
+
+    public Trainer() => Features = [.. Groups.SelectMany(g => g.Features)];
 
     /// <summary>Address of the player found by the last tick, or 0.</summary>
     public nint Player { get; private set; }

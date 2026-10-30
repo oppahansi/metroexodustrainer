@@ -34,7 +34,8 @@ Planned: more consumables (filters, materials, chemicals), always-clean weapons,
 Requirements: Windows, the [.NET 10 SDK](https://dotnet.microsoft.com/download) and the game.
 
 ```
-dotnet run --project src/MetroExodusTrainer.Cli
+dotnet run --project src/MetroExodusTrainer.App    # graphical front-end
+dotnet run --project src/MetroExodusTrainer.Cli    # console front-end
 ```
 
 Start the game and load a save (hotkeys are global, so they work while the game has focus; NumLock must be on). If the game runs
@@ -50,6 +51,7 @@ exactly.
 
 ```
 src/MetroExodusTrainer.Core   process access, build check, offsets, features, code patches
+src/MetroExodusTrainer.App    WPF front-end (categories, toggle switches)
 src/MetroExodusTrainer.Cli    console front-end (hotkeys, status display)
 tools/                        PDB symbol/type dump and disassembly scripts (Python)
 docs/                         research notes and progress

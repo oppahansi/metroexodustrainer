@@ -1,7 +1,9 @@
 using System.Runtime.InteropServices;
 
+namespace MetroExodusTrainer.Core;
+
 /// <summary>A global hotkey: a label for the UI and a way to ask whether it is held right now.</summary>
-sealed record Hotkey(string Label, Func<bool> IsDown);
+public sealed record Hotkey(string Label, Func<bool> IsDown);
 
 /// <summary>
 /// Numpad hotkeys (the game uses the F keys). Feature slots run through three layers of nine keys:
@@ -9,7 +11,7 @@ sealed record Hotkey(string Label, Func<bool> IsDown);
 /// modifier is held. Shift is not used: Windows turns Shift+numpad digits into navigation keys and fakes Shift
 /// key events around them, which made those combinations unreliable.
 /// </summary>
-static class Hotkeys
+public static class Hotkeys
 {
     private const int VkShift = 0x10;
     private const int VkControl = 0x11;

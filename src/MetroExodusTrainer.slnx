@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="MetroExodusTrainer.App/MetroExodusTrainer.App.csproj" />
   <Project Path="MetroExodusTrainer.Cli/MetroExodusTrainer.Cli.csproj" />
   <Project Path="MetroExodusTrainer.Core/MetroExodusTrainer.Core.csproj" />
 </Solution>
