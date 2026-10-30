@@ -13,6 +13,8 @@ public sealed class InfiniteCraftResources : Feature
 
     public override string Name => "Unlimited crafting resources";
 
+    public override IReadOnlyList<string> Requires => ["Vtables"];
+
     protected override void Apply(GameProcess game, nint player)
     {
         nint inventory = game.ReadPointer(player + Offsets.Player.Inventory);

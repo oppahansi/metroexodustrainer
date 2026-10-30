@@ -10,7 +10,7 @@ public sealed class Invisibility() : ActorFlagFeature(Offsets.ActorFlags.NotATar
 {
     // Entry of stealth_base::update(this, owner, ...) becomes: mov [rcx+28h],0 ; mov [rcx+1Ch],0 ; ret
     private readonly CodePatch _exposurePatch = new(
-        "light exposure", Offsets.Stealth.Update,
+        "light exposure", () => Offsets.Stealth.Update,
         expected: [0x48, 0x85, 0xD2, 0x0F, 0x84, 0x54, 0x01, 0x00, 0x00, 0x53, 0x55, 0x41, 0x56, 0x48, 0x83],
         replacement:
         [
@@ -20,6 +20,8 @@ public sealed class Invisibility() : ActorFlagFeature(Offsets.ActorFlags.NotATar
         ]);
 
     public override string Name => "Invisible to enemies";
+
+    public override IReadOnlyList<string> Requires => ["PsActorFlags", "StealthUpdate"];
 
     protected override void OnEnable(GameProcess game, nint player) =>
         Warning = _exposurePatch.TryApply(game) ? null : _exposurePatch.Error;
@@ -53,6 +55,8 @@ public sealed class LowEnemyHealth : Feature
     private const float Low = 0.001f;
 
     public override string Name => "Low enemy health";
+
+    public override IReadOnlyList<string> Requires => ["GEntities", "Vtables"];
 
     // Enemies are only scanned a few times per second; the entity list is large.
     private long _lastScan;
@@ -90,6 +94,8 @@ public sealed class Deafen : Feature
     private readonly PlayerSoundHook _hook = new();
 
     public override string Name => "Enemies cannot hear you";
+
+    public override IReadOnlyList<string> Requires => ["SoundMemoryOnSound", "ThreatMemoryOnSound"];
 
     protected override void OnEnable(GameProcess game, nint player) =>
         Warning = _hook.TryApply(game, player) ? null : _hook.Error;

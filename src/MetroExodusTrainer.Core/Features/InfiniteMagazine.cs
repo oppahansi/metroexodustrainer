@@ -15,6 +15,8 @@ public sealed class InfiniteMagazine : Feature
 
     public override string Name => "Infinite magazine (no reload needed)";
 
+    public override IReadOnlyList<string> Requires => ["Vtables"];
+
     protected override void OnEnable(GameProcess game, nint player) => _max.Clear();
 
     protected override void Apply(GameProcess game, nint player)

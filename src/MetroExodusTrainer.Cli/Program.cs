@@ -304,6 +304,21 @@ if (args.Length > 0 && args[0] == "scan")
     return;
 }
 
+if (args.Length > 0 && args[0] == "support")
+{
+    // Prints how the attached build is supported and which features are available (try METROTRAINER_FORCE_SCAN=1).
+    using var g = GameProcess.Attach() ?? throw new InvalidOperationException("game not running");
+    var info = BuildInfo.FromExe(g.ExePath);
+    var sup = AddressBook.Resolve(g, info);
+    var tr = new Trainer();
+    tr.ApplySupport(sup);
+    Console.WriteLine($"{info}: {sup.Level}. {sup.Summary}");
+    if (sup.Moved.Count > 0) Console.WriteLine("scan disagrees with stored values: " + string.Join(", ", sup.Moved));
+    foreach (var f in tr.Features)
+        Console.WriteLine($"  {(f.Unavailable is null ? "available  " : "UNAVAILABLE")} {f.Name}{(f.Unavailable is null ? "" : "  -- " + f.Unavailable)}");
+    return;
+}
+
 var trainer = new Trainer();
 var featureKeys = trainer.Features.Select(f => Hotkeys.ForFeature(f.Slot)).ToArray();
 var featureDown = new bool[featureKeys.Length];
@@ -331,7 +346,9 @@ while (true)
     using var game = WaitForGame();
     current = game;
     var build = BuildInfo.FromExe(game.ExePath);
-    bool buildOk = build.FileVersion == Offsets.KnownFileVersion;
+    var support = AddressBook.Resolve(game, build);
+    trainer.ApplySupport(support);
+    bool buildOk = support.Usable;
 
     long lastDraw = 0;
     while (!game.HasExited)
@@ -358,7 +375,7 @@ while (true)
         if (now - lastDraw >= DrawEveryMs)
         {
             lastDraw = now;
-            Draw(game, build, buildOk, trainer, featureKeys);
+            Draw(game, build, support, trainer, featureKeys);
         }
         Thread.Sleep(TickMs);
     }
@@ -393,14 +410,14 @@ static GameProcess WaitForGame()
     }
 }
 
-static void Draw(GameProcess game, BuildInfo build, bool buildOk, Trainer trainer, Hotkey[] featureKeys)
+static void Draw(GameProcess game, BuildInfo build, BuildSupport support, Trainer trainer, Hotkey[] featureKeys)
 {
     Console.SetCursorPosition(0, 0);
     var lines = new List<string>
     {
         "MetroExodusTrainer",
         $"Game build: {build}",
-        buildOk ? "" : $"UNSUPPORTED BUILD (expected {Offsets.KnownFileVersion}); features are disabled.",
+        support.Level == BuildSupportLevel.Known ? "" : support.Summary,
         trainer.PlayerFound ? "Player: found" : "Player: not found (load a save; not in cutscene/menu)",
         "",
     };
@@ -408,7 +425,7 @@ static void Draw(GameProcess game, BuildInfo build, bool buildOk, Trainer traine
         lines.Add("!! NumLock is OFF - the numpad hotkeys will not work. Press NumLock.");
     for (int i = 0; i < trainer.Features.Count; i++)
         lines.Add($"  {featureKeys[i].Label,-14} [{(trainer.Features[i].Enabled ? "ON " : "off")}]  {trainer.Features[i].Name}" +
-                  (trainer.Features[i].Warning is { } w ? $"   !! {w}" : ""));
+                  ((trainer.Features[i].Unavailable ?? trainer.Features[i].Warning) is { } w ? $"   !! {w}" : ""));
     lines.Add($"  {Hotkeys.Reset.Label,-14}       Reset everything to default values");
     lines.Add("");
     lines.AddRange(Diagnostics(game, trainer));

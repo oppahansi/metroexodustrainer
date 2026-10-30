@@ -4,7 +4,7 @@ namespace MetroExodusTrainer.Core;
 /// A reversible patch of game code. It only applies when the bytes at the target are exactly the
 /// expected original ones, so a different game build can never be corrupted by a stale address.
 /// </summary>
-public sealed class CodePatch(string name, nint rva, byte[] expected, byte[] replacement)
+public sealed class CodePatch(string name, Func<nint> rva, byte[] expected, byte[] replacement)
 {
     public string Name { get; } = name;
     public bool Applied { get; private set; }
@@ -17,12 +17,12 @@ public sealed class CodePatch(string name, nint rva, byte[] expected, byte[] rep
         if (Applied)
             return true;
 
-        var current = game.ReadBytes(game.Base + rva, expected.Length);
+        var current = game.ReadBytes(game.Base + rva(), expected.Length);
         if (current is null)
             return Fail("could not read game code");
         if (!current.AsSpan().SequenceEqual(expected))
             return Fail("game code differs from the expected build");
-        if (!game.WriteCode(game.Base + rva, replacement))
+        if (!game.WriteCode(game.Base + rva(), replacement))
             return Fail("could not write game code");
 
         Applied = true;
@@ -34,7 +34,7 @@ public sealed class CodePatch(string name, nint rva, byte[] expected, byte[] rep
     {
         if (!Applied)
             return;
-        game.WriteCode(game.Base + rva, expected);
+        game.WriteCode(game.Base + rva(), expected);
         Applied = false;
     }
 

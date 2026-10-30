@@ -19,6 +19,8 @@ public sealed class NoOverheat : WeaponFieldFeature
 {
     public override string Name => "No weapon overheat";
 
+    public override IReadOnlyList<string> Requires => ["Vtables"];
+
     protected override void ApplyTo(GameProcess game, nint weapon) =>
         game.Write(weapon + Offsets.Weapon.Heat, 0f);
 }
@@ -31,6 +33,8 @@ public sealed class NoOverheat : WeaponFieldFeature
 public sealed class AlwaysClean : WeaponFieldFeature
 {
     public override string Name => "Weapons never get dirty";
+
+    public override IReadOnlyList<string> Requires => ["Vtables"];
 
     protected override void ApplyTo(GameProcess game, nint weapon)
     {
@@ -47,6 +51,8 @@ public sealed class AlwaysClean : WeaponFieldFeature
 public sealed class AirPressureFull : WeaponFieldFeature
 {
     public override string Name => "Air weapons stay pressurized";
+
+    public override IReadOnlyList<string> Requires => ["Vtables"];
 
     protected override void ApplyTo(GameProcess game, nint weapon)
     {
@@ -75,6 +81,8 @@ public sealed class NoJam : WeaponFieldFeature
 {
     public override string Name => "No weapon jam";
 
+    public override IReadOnlyList<string> Requires => ["Vtables"];
+
     protected override void ApplyTo(GameProcess game, nint weapon) =>
         game.Write<byte>(weapon + Offsets.Weapon.JamState, 0);
 }
@@ -87,11 +95,13 @@ public sealed class NoJam : WeaponFieldFeature
 public sealed class NoRecoil : WeaponFieldFeature
 {
     private readonly CodePatch _curvePatch = new(
-        "recoil curve", Offsets.Weapon.RecoilCurveEvaluate,
+        "recoil curve", () => Offsets.Weapon.RecoilCurveEvaluate,
         expected: [0x48, 0x89, 0x5C, 0x24, 0x08],
         replacement: [0x0F, 0x57, 0xC0, 0xC3, 0x90]);
 
     public override string Name => "No recoil";
+
+    public override IReadOnlyList<string> Requires => ["RecoilCurveEvaluate", "Vtables"];
 
     protected override void OnEnable(GameProcess game, nint player) =>
         Warning = _curvePatch.TryApply(game) ? null : _curvePatch.Error;
@@ -121,11 +131,13 @@ public sealed class NoRecoil : WeaponFieldFeature
 public sealed class MaxAccuracy : Feature
 {
     private readonly CodePatch _patch = new(
-        "fire dispersion", Offsets.Weapon.FireDispersion,
+        "fire dispersion", () => Offsets.Weapon.FireDispersion,
         expected: [0x48, 0x8B, 0xC4, 0x55, 0x53],
         replacement: [0x0F, 0x57, 0xC0, 0xC3, 0x90]);
 
     public override string Name => "Maximum shoot accuracy";
+
+    public override IReadOnlyList<string> Requires => ["FireDispersion"];
 
     protected override void OnEnable(GameProcess game, nint player) =>
         Warning = _patch.TryApply(game) ? null : _patch.Error;
@@ -152,6 +164,8 @@ public sealed class RapidFire : Feature
     private readonly ShotIntervalHook _hook = new();
 
     public override string Name => "Rapid fire";
+
+    public override IReadOnlyList<string> Requires => ["CalcShotIntervalReturn"];
 
     protected override void OnEnable(GameProcess game, nint player) =>
         Warning = _hook.TryApply(game, Factor) ? null : _hook.Error;

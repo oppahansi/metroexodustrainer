@@ -62,7 +62,10 @@ public static class AddressBook
 
     public static BuildSupport Resolve(GameProcess game, BuildInfo build)
     {
-        bool known = build.FileVersion == Offsets.KnownFileVersion;
+        // METROTRAINER_FORCE_SCAN=1 treats the build as unknown, to test the scan path on the known build.
+        bool known = build.FileVersion == Offsets.KnownFileVersion &&
+                     Environment.GetEnvironmentVariable("METROTRAINER_FORCE_SCAN") != "1";
+        RestoreDefaults();
         var scan = SignatureScanner.Scan(game, Generated.GameSignatures.All);
 
         var moved = new List<string>();

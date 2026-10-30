@@ -11,7 +11,8 @@ public sealed class PlayerSoundHook
 {
     private sealed record Site(nint Rva, byte[] Original, byte SourceOffset);
 
-    private static readonly Site[] Sites =
+    // Built when the hook is installed: the addresses are only known once the game build has been resolved.
+    private static Site[] CreateSites() =>
     [
         // prologue of sound_memory_manager::on_sound; the sound's source shared part is at [rdx+8]
         new(Offsets.Sound.SoundMemoryOnSound,
@@ -35,7 +36,8 @@ public sealed class PlayerSoundHook
     private const int DataSize = 16;
 
     private nint _block;
-    private readonly bool[] _installed = new bool[Sites.Length];
+    private Site[] _sites = [];
+    private readonly bool[] _installed = new bool[2];
 
     public bool Applied { get; private set; }
     public string? Error { get; private set; }
@@ -45,7 +47,8 @@ public sealed class PlayerSoundHook
     {
         if (!Applied)
         {
-            foreach (var site in Sites)
+            _sites = CreateSites();
+            foreach (var site in _sites)
             {
                 var current = game.ReadBytes(game.Base + site.Rva, site.Original.Length);
                 if (current is null)
@@ -56,29 +59,29 @@ public sealed class PlayerSoundHook
 
             if (_block == 0)
             {
-                _block = game.AllocExecutable(DataSize + StubSize * Sites.Length);
+                _block = game.AllocExecutable(DataSize + StubSize * _sites.Length);
                 if (_block == 0)
                     return Fail("could not allocate memory in the game");
             }
 
             game.Write(_block, 1L); // matches no object until a player is known
 
-            for (int i = 0; i < Sites.Length; i++)
+            for (int i = 0; i < _sites.Length; i++)
             {
                 nint stub = _block + DataSize + StubSize * i;
-                nint site = game.Base + Sites[i].Rva;
-                if (!game.WriteCode(stub, BuildStub(Sites[i], site, stub)))
+                nint site = game.Base + _sites[i].Rva;
+                if (!game.WriteCode(stub, BuildStub(_sites[i], site, stub)))
                     return Fail("could not write the hook stub");
             }
 
-            for (int i = 0; i < Sites.Length; i++)
+            for (int i = 0; i < _sites.Length; i++)
             {
                 nint stub = _block + DataSize + StubSize * i;
                 var detour = new List<byte> { 0xFF, 0x25, 0, 0, 0, 0 };
                 detour.AddRange(BitConverter.GetBytes((long)stub));
-                while (detour.Count < Sites[i].Original.Length)
+                while (detour.Count < _sites[i].Original.Length)
                     detour.Add(0x90);
-                if (!game.WriteCode(game.Base + Sites[i].Rva, [.. detour]))
+                if (!game.WriteCode(game.Base + _sites[i].Rva, [.. detour]))
                 {
                     Revert(game);
                     return Fail("could not install the hook");
@@ -103,10 +106,10 @@ public sealed class PlayerSoundHook
 
     public void Revert(GameProcess game)
     {
-        for (int i = 0; i < Sites.Length; i++)
+        for (int i = 0; i < _sites.Length; i++)
         {
             if (_installed[i])
-                game.WriteCode(game.Base + Sites[i].Rva, Sites[i].Original);
+                game.WriteCode(game.Base + _sites[i].Rva, _sites[i].Original);
             _installed[i] = false;
         }
         if (_block != 0)

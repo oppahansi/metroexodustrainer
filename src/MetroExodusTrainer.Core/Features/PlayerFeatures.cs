@@ -59,7 +59,7 @@ public sealed class InfiniteStamina : Feature
     private bool _hadBoost;          // the boost entry was seen during the sprint that is currently held
 
     private readonly CodePatch _sprintAllowedPatch = new(
-        "sprint-allowed store", Offsets.SprintAllowedStore,
+        "sprint-allowed store", () => Offsets.SprintAllowedStore,
         expected: [0x88, 0x81, 0x2A, 0x25, 0x00, 0x00],
         replacement: [0x90, 0x90, 0x90, 0x90, 0x90, 0x90]);
 
@@ -175,6 +175,8 @@ public sealed class FastMovement : Feature
     private float _original = Offsets.DefaultPlayerSpeedScale;
 
     public override string Name => "Fast movement";
+
+    public override IReadOnlyList<string> Requires => ["PlayerSpeedScale", "SprintAllowedStore", "MovementExReset"];
     public override bool NeedsPlayer => false;
 
     protected override void OnEnable(GameProcess game, nint player)
@@ -235,6 +237,8 @@ public sealed class FlyMode : Feature
     public PlayerFlyHook Hook => _hook;
 
     public override string Name => "Fly mode (WASD, Space up, C down, Shift fast)";
+
+    public override IReadOnlyList<string> Requires => ["MoveByVelEx", "StepConstant"];
 
     private byte _jumpAllowedBefore = 1;
 

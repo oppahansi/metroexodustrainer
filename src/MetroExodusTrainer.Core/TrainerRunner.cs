@@ -38,6 +38,9 @@ public sealed class TrainerRunner : IDisposable
 
     public BuildInfo? Build { get; private set; }
 
+    /// <summary>How well the attached build is supported (addresses found, features available).</summary>
+    public BuildSupport? Support { get; private set; }
+
     /// <summary>The hotkey label of each feature, in <see cref="Trainer.Features"/> order.</summary>
     public string HotkeyLabel(int featureIndex) => _featureKeys[featureIndex].Label;
 
@@ -84,7 +87,9 @@ public sealed class TrainerRunner : IDisposable
 
             _game = game;
             Build = BuildInfo.FromExe(game.ExePath);
-            bool buildOk = Build.FileVersion == Offsets.KnownFileVersion;
+            Support = AddressBook.Resolve(game, Build);
+            Trainer.ApplySupport(Support);
+            bool buildOk = Support.Usable;
             State = buildOk ? RunnerState.Running : RunnerState.UnsupportedBuild;
 
             while (!_stop && !game.HasExited)

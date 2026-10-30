@@ -29,6 +29,8 @@ public sealed class GasMaskNeverBreaks : Feature
 {
     public override string Name => "Gas mask never breaks";
 
+    public override IReadOnlyList<string> Requires => ["Vtables"];
+
     protected override void Apply(GameProcess game, nint player)
     {
         foreach (nint mask in InventoryItems.Find(game, player, GasmaskVtables.Rvas))
@@ -44,6 +46,8 @@ public sealed class GasMaskNeverBreaks : Feature
 public sealed class UnlimitedBattery : Feature
 {
     public override string Name => "Unlimited flashlight & night vision charge";
+
+    public override IReadOnlyList<string> Requires => ["Vtables"];
 
     protected override void Apply(GameProcess game, nint player)
     {

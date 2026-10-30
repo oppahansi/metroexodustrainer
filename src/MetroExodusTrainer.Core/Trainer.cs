@@ -34,6 +34,20 @@ public sealed class Trainer
 
     public IReadOnlyList<Feature> Features { get; }
 
+    /// <summary>Switches off the features whose game addresses or class tables are not available in the attached build.</summary>
+    public void ApplySupport(BuildSupport support)
+    {
+        foreach (var feature in Features)
+        {
+            string? missing = feature.Requires.FirstOrDefault(r => r == "Vtables" ? !support.VtablesAvailable : support.IsMissing(r));
+            feature.Unavailable = missing is null ? null
+                : missing == "Vtables" ? "Needs the class tables of a known game build"
+                : $"Not found in this game build ({missing})";
+            if (feature.Unavailable is not null)
+                feature.Set(false);
+        }
+    }
+
     public Trainer() => Features = [.. Groups.SelectMany(g => g.Features)];
 
     /// <summary>Address of the player found by the last tick, or 0.</summary>

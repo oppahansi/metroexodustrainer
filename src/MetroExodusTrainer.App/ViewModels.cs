@@ -22,9 +22,9 @@ public sealed class FeatureVm(Feature feature, string hotkey, TrainerRunner runn
 {
     public string Name => feature.Name;
     public string Hotkey => hotkey;
-    public string? Warning => feature.Warning;
-    public bool HasWarning => feature.Warning is not null;
-    public bool CanToggle => runner.CanToggle;
+    public string? Warning => feature.Unavailable ?? feature.Warning;
+    public bool HasWarning => Warning is not null;
+    public bool CanToggle => runner.CanToggle && feature.Unavailable is null;
     public bool IsOn => feature.Enabled;
 
     public void Toggle()
@@ -74,7 +74,8 @@ public sealed class MainVm : Observable
     public string StatusDetail => _runner.State switch
     {
         RunnerState.WaitingForGame => "Start the game; the trainer attaches by itself.",
-        RunnerState.UnsupportedBuild => $"Found {_runner.Build?.FileVersion}, expected {Offsets.KnownFileVersion}. Features are disabled.",
+        RunnerState.UnsupportedBuild => $"Game version {_runner.Build?.FileVersion}. {_runner.Support?.Summary} Features are disabled.",
+        _ when _runner.Support is { Level: not BuildSupportLevel.Known } support => $"Game version {_runner.Build?.FileVersion}. {support.Summary}",
         _ => _runner.Trainer.PlayerFound ? $"Game version {_runner.Build?.FileVersion}" : "Load a save (not a cutscene or menu).",
     };
 

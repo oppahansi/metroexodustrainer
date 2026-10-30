@@ -14,6 +14,8 @@ public sealed class FreezeTimeOfDay : Feature
 
     public override string Name => "Freeze time of day";
 
+    public override IReadOnlyList<string> Requires => ["GGame"];
+
     public override bool NeedsPlayer => false;
 
     protected override void OnEnable(GameProcess game, nint player)

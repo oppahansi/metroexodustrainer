@@ -5,6 +5,12 @@ public abstract class Feature
 {
     public abstract string Name { get; }
 
+    /// <summary>Names of the game addresses (or "Vtables") this feature needs; see <see cref="AddressBook"/>.</summary>
+    public virtual IReadOnlyList<string> Requires => [];
+
+    /// <summary>Why the feature cannot be used with the attached game build, or null.</summary>
+    public string? Unavailable { get; internal set; }
+
     /// <summary>Fixed hotkey slot of this feature (see <see cref="Hotkeys.ForFeature"/>); never reused, so keys stay stable.</summary>
     public int Slot { get; init; } = -1;
     public bool Enabled { get; private set; }

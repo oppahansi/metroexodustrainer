@@ -39,6 +39,8 @@ public abstract class ActorFlagFeature(uint mask) : Feature
 public sealed class UnlimitedItems() : ActorFlagFeature(Offsets.ActorFlags.UnlimitedItems)
 {
     public override string Name => "Unlimited ammo, medkits & throwables";
+
+    public override IReadOnlyList<string> Requires => ["PsActorFlags", "Vtables"];
     public override bool NeedsPlayer => true;
 
     protected override void Apply(GameProcess game, nint player)
@@ -94,4 +96,6 @@ public sealed class UnlimitedItems() : ActorFlagFeature(Offsets.ActorFlags.Unlim
 public sealed class FreeGasMask() : ActorFlagFeature(Offsets.ActorFlags.FreeGasMask)
 {
     public override string Name => "No filter drain / suffocation";
+
+    public override IReadOnlyList<string> Requires => ["PsActorFlags"];
 }
