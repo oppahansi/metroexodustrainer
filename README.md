@@ -1,18 +1,62 @@
 # MetroExodusTrainer
 
-An open-source, single-player trainer for **Metro Exodus Enhanced Edition** (Epic Games build 2.0.1.1 first).
+An open-source, single-player trainer for **Metro Exodus Enhanced Edition**. It attaches to the running game,
+so nothing is injected permanently and nothing on disk is modified.
 
-> Status: early research. Nothing here is functional yet.
+Currently supports the **Epic Games Store build 2.0.1.1** only. The trainer refuses to apply anything on a
+different build.
 
-## Goals
-- External process trainer (C#), signature-based so it survives game updates
-- Feature set inspired by existing community trainers (invulnerability, infinite ammo, etc.)
-- Offsets and signatures are derived from the game's own shipped symbols; no game files are redistributed
+## Features
+
+| Key | Function | Status |
+|---|---|---|
+| F1 | Invulnerability | working |
+| F2 | Infinite stamina (no sprint exhaustion) | working |
+| F3 | Fast movement | working |
+| F4 | High jump | working |
+| F11 | Save the last 60 s of movement values to `logs/trace-*.csv` (debugging aid) | working |
+| F12 | Reset everything to the game's default values | working |
+
+Planned: infinite ammo and consumables (medkits, filters, grenades, knives, Molotovs, decoys), no reload,
+no recoil, rapid fire, battery and gas mask features, no clip, and more. See [docs/progress.md](docs/progress.md).
+
+## Running it
+
+Requirements: Windows, the [.NET 10 SDK](https://dotnet.microsoft.com/download) and the game.
+
+```
+dotnet run --project src/MetroExodusTrainer.Cli
+```
+
+Start the game and load a save (hotkeys are global, so they work while the game has focus). If the game runs
+as administrator, start the trainer as administrator too. Closing the trainer (Ctrl+C) restores the defaults.
+
+`src/MetroExodusTrainer.Probe` is a small read-only tool that prints the player pointer chain and a few values.
+
+## How it works
+
+The game ships its debug symbols (`MetroExodus.pdb`), which gives function names and exact struct layouts.
+`tools/` contains scripts that read the symbols and disassemble code, and
+[docs/research-notes.md](docs/research-notes.md) lists the findings the trainer is built on. Most features are
+plain memory writes. A few need a small, reversible code patch, and these only apply if the original bytes match
+exactly.
+
+```
+src/MetroExodusTrainer.Core   process access, build check, offsets, features, code patches
+src/MetroExodusTrainer.Cli    console front-end (hotkeys, status display, trace recorder)
+src/MetroExodusTrainer.Probe  read-only diagnostic
+tools/                        PDB symbol/type dump and disassembly scripts (Python)
+docs/                         research notes and progress
+```
+
+No game files, symbols or dumps are included in this repository.
 
 ## Disclaimer
+
 For single-player, offline use only. Not affiliated with 4A Games, Deep Silver or Epic Games.
-Do not use online or to gain an unfair advantage over other players.
+Do not use online or to gain an unfair advantage over other players. Use at your own risk and keep a backup of
+your saves.
 
 ## License
-MIT, see [LICENSE](LICENSE).
 
+MIT, see [LICENSE](LICENSE).
