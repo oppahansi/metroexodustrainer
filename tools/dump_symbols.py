@@ -52,7 +52,7 @@ def main(exe, out_path):
         def cb(info, _sz, _ctx):
             nonlocal count
             s = info.contents
-            name = ctypes.wstring_at(ctypes.addressof(s) + SYMBOL_INFOW.Name.offset, s.NameLen)
+            name = ctypes.wstring_at(ctypes.addressof(s) + SYMBOL_INFOW.Name.offset, s.NameLen).rstrip(chr(0) + " ")
             f.write(f"{s.Address - base:x}\t{s.Size}\t{s.Tag}\t{name}\n")
             count += 1
             return True

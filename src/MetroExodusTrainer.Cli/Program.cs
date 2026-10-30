@@ -8,7 +8,7 @@ const int TickMs = 10;
 const int DrawEveryMs = 250;
 const int ResetKey = 0x7B; // F12
 const int DumpKey = 0x7A;  // F11
-int[] featureKeys = [0x70, 0x71, 0x72, 0x73, 0x74, 0x75]; // F1..F6
+int[] featureKeys = [0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76]; // F1..F7
 
 var trainer = new Trainer();
 var down = new bool[featureKeys.Length + 2];

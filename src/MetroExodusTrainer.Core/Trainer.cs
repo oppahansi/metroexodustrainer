@@ -13,6 +13,7 @@ public sealed class Trainer
         new HighJump(),
         new UnlimitedItems(),
         new FreeGasMask(),
+        new InfiniteMagazine(),
     ];
 
     /// <summary>Address of the player found by the last tick, or 0.</summary>
