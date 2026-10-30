@@ -36,6 +36,7 @@ public static class Offsets
     /// <summary>The character movement functions used for fly mode.</summary>
     public static class Fly
     {
+        public const nint ControllerLastVelocityY = 0x378; // nx_dynamic_cct::_last_vel.y
         public const nint HeadPitch = 0x9E0;           // cplayer::_head_angles.x, radians, negative looking up
         public const nint HeadYaw = 0x9E4;             // cplayer::_head_angles.y, radians
         public const nint MoveByVelEx = 0x792020;      // mov_control_nx_player::move_by_vel_ex, called every frame per mover
@@ -168,6 +169,7 @@ public static class Offsets
         public const nint StateReal = 0x1D50;        // movement state bit flags
         public const nint VsMoveAllowed = 0x2528;    // bytes: walk, run, sprint, crouch, jump; scripts clear them
         public const int VsMoveAllowedSprint = 2;
+        public const int VsMoveAllowedJump = 4;
         public const nint Immortal = 0xA93;          // bit 7
         public const int ImmortalBit = 7;
         public const nint Invulnerable = 0xA94;      // bit 0

@@ -225,6 +225,8 @@ public sealed class FlyMode : Feature
 {
     private const float Speed = 9f;          // game units (metres) per second
     private const float BoostFactor = 3f;
+    private const float Hover = 0.0025f;        // upward speed that keeps the body from falling
+    private const float HoverThreshold = 0.01f;
     private const int VkW = 0x57, VkA = 0x41, VkS = 0x53, VkD = 0x44, VkC = 0x43, VkSpace = 0x20, VkLShift = 0xA0;
 
     private readonly PlayerFlyHook _hook = new();
@@ -234,8 +236,14 @@ public sealed class FlyMode : Feature
 
     public override string Name => "Fly mode (WASD, Space up, C down, Shift fast)";
 
-    protected override void OnEnable(GameProcess game, nint player) =>
+    private byte _jumpAllowedBefore = 1;
+
+    protected override void OnEnable(GameProcess game, nint player)
+    {
         Warning = _hook.TryApply(game, player) ? null : _hook.Error;
+        if (game.TryRead<byte>(player + Offsets.Player.VsMoveAllowed + Offsets.Player.VsMoveAllowedJump, out var jump))
+            _jumpAllowedBefore = jump;
+    }
 
     protected override void Apply(GameProcess game, nint player)
     {
@@ -265,12 +273,34 @@ public sealed class FlyMode : Feature
             vz = (fz * forward + rz * right) * speed;
         }
 
-        _hook.SetVelocity(game, vx, vy, vz);
+        // The physics body takes the requested velocity as input, but a downward component is ignored (gravity does that) and
+        // a zero vertical component leaves gravity on. A tiny upward component (above the game's jump threshold of 0.001)
+        // makes the body hold its height. To go down, gravity is let through only while the body is slower than wanted.
+        float sendY = vy;
+        if (vy > HoverThreshold)
+            sendY = vy;
+        else if (vy < -HoverThreshold && FallingSpeed(game) is float falling && falling > vy)
+            sendY = 0f;
+        else
+            sendY = Hover;
+
+        _hook.SetVelocity(game, vx, sendY, vz);
         _hook.SetEnabled(game, true);
+
+        // The game's climb-over (vault) logic would otherwise start whenever flying into a ledge.
+        game.Write<byte>(player + Offsets.Player.VsMoveAllowed + Offsets.Player.VsMoveAllowedJump, 0);
+    }
+
+    private float? FallingSpeed(GameProcess game)
+    {
+        nint mover = _hook.ReadMover(game);
+        nint controller = mover == 0 ? 0 : game.ReadPointer(mover + 0x68);
+        return controller != 0 && game.TryRead<float>(controller + Offsets.Fly.ControllerLastVelocityY, out var v) ? v : null;
     }
 
     protected override void Restore(GameProcess game, nint player)
     {
+        game.Write(player + Offsets.Player.VsMoveAllowed + Offsets.Player.VsMoveAllowedJump, _jumpAllowedBefore);
         _hook.SetEnabled(game, false);
         _hook.Revert(game);
         Warning = null;

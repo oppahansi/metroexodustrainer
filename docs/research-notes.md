@@ -180,6 +180,13 @@ All fields are on the `weapon_magazined`-derived entity found through the invent
   physics step and consumes queued input, so a displacement from `move_no_collision` is fought by gravity, jumping and input. A
   movement trace tool (`Cli trace <seconds> plain|fly`) records the state to `research/dumps/fly-trace-*.csv` for analysis.
 
+  Trace findings: the hook's displacement reaches the physics body as an input velocity (`_pending_vel`), but the dynamic controller
+  ignores a downward input (gravity does that) and leaves gravity on while the vertical input is zero; an upward input above 0.001
+  (the game's jump threshold) sets the vertical velocity directly. Mode 2 (kinematic) is only entered by the game's vault. Hovering
+  therefore sends a tiny upward velocity; descending lets gravity act while the body is slower than wanted. The body still collides
+  with walls (contacts stay), so this is fly mode, not noclip. Vaulting is prevented by clearing the jump byte of the allowed-movement
+  flags while flying.
+
 ### Defaults and reset (Num0)
 Values captured when a feature is switched on can be stale if an earlier run was closed with the feature on.
 Num0 therefore writes real defaults, whether or not the feature is on:
