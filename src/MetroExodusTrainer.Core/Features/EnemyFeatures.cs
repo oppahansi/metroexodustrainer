@@ -75,13 +75,33 @@ public sealed class LowEnemyHealth : Feature
         if (!game.TryRead<byte>(player + Offsets.Entities.FriendType, out var faction))
             return;
 
-        foreach (nint npc in Npcs.Find(game))
+        var npcs = Npcs.Find(game).ToList();
+        foreach (nint npc in npcs)
         {
             if (!Npcs.IsEnemy(game, npc, faction))
                 continue;
             if (game.TryRead<float>(npc + Offsets.Entities.Health, out var health) && health > Low && (health <= 1.5f || IsBoosted(health)))
+            {
+                _original[npc] = health;
                 game.Write(npc + Offsets.Entities.Health, Low);
+            }
         }
+
+        // Forget NPCs that are gone so a reused address is not restored by mistake.
+        foreach (var key in _original.Keys.Where(k => !npcs.Contains(k)).ToList())
+            _original.Remove(key);
+    }
+
+    // Health each lowered NPC had before, so switching off gives it back (dead NPCs and ones that took damage are left alone).
+    private readonly Dictionary<nint, float> _original = [];
+
+    protected override void Restore(GameProcess game, nint player)
+    {
+        var npcs = Npcs.Find(game).ToHashSet();
+        foreach (var (npc, health) in _original)
+            if (npcs.Contains(npc) && game.TryRead<float>(npc + Offsets.Entities.Health, out var current) && current > 0f && current <= Low * 1.01f)
+                game.Write(npc + Offsets.Entities.Health, health);
+        _original.Clear();
     }
 }
 
