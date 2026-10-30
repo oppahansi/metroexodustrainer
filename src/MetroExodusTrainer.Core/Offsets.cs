@@ -77,23 +77,11 @@ public static class Offsets
     {
         public const nint Health = 0x3B8;
         public const nint Inventory = 0x10F0;        // pointer to the player's inventory object
-        public const nint StaticParams = 0x240;      // pointer to per-entity static params
-        public const nint StaticBaseSpeed = 0xE04;   // float inside static params; base speed when the mod stack is empty
         public const nint SpeedModArray = 0x2548;    // pointer to vs_speed_mod entries (24 bytes: current, target, blend, ?, block*)
-        public const nint SpeedModCapacity = 0x2550; // u16 allocated entries; the array is kept after the stack empties
         public const nint SpeedModCount = 0x2552;    // u16 size of the stack; the top entry is the active base speed
         public const uint SprintStateFlag = 0x400;   // set in StateReal while the sprint key is active
         public const nint SpeedModStride = 24;
-        public const nint EvadeState = 0x1491;
-        public const nint MoveSpeed = 0x14A0;
-        public const nint AnimSpeedCoef = 0xFB0;
-        public const nint StateTarget = 0x1D54;
         public const nint StateReal = 0x1D50;        // movement state bit flags
-        public const nint TiredForSprint = 0x1D6E;
-        public const nint DamagedForSprint = 0x1D6F;
-        public const nint VsSpeed = 0x24F0;          // walk, run, sprint, crouch multipliers (floats)
-        public const nint VsSpeedTarget = 0x250C;
-        public const nint VsSpeedBlend = 0x2530;
         public const nint VsMoveAllowed = 0x2528;    // bytes: walk, run, sprint, crouch, jump; scripts clear them
         public const int VsMoveAllowedSprint = 2;
         public const nint Immortal = 0xA93;          // bit 7
@@ -108,7 +96,6 @@ public static class Offsets
         public const nint BaseSpeed = 0x27E0;
         public const nint BaseJump = 0x27E4;
         public const nint Stamina = 0x2A1C;
-        public const nint StaminaState = 0x2A20;     // estamina_state: 0 idle, 1 recovering, 2 in use
         public const nint CanUseStamina = 0x2A21;    // cleared by use_stamina when exhausted; can_sprint/can_jump need it set
     }
 }

@@ -14,7 +14,6 @@ static class Hotkeys
     private const int VkNumLock = 0x90;
     private const int VkNumpad0 = 0x60;
     private const int VkNumpad1 = 0x61;
-    private const int VkDecimal = 0x6E;
 
     // What Shift + Num1..Num9 reports while NumLock is on: End, Down, PageDown, Left, Clear, Right, Home, Up, PageUp.
     private static readonly int[] ShiftedNumpad = [0x23, 0x28, 0x22, 0x25, 0x0C, 0x27, 0x24, 0x26, 0x21];
@@ -22,7 +21,6 @@ static class Hotkeys
     public static int FeatureSlots => ShiftedNumpad.Length * 2;
 
     public static readonly Hotkey Reset = new("Num0", () => !ShiftDown && Down(VkNumpad0));
-    public static readonly Hotkey SaveTrace = new("Num.", () => !ShiftDown && Down(VkDecimal));
 
     public static bool NumLockOn => (GetKeyState(VkNumLock) & 1) != 0;
 

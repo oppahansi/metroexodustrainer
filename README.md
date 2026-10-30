@@ -21,7 +21,6 @@ features, the next ones use Shift + Num1-Num9.
 | Num6 | No filter drain / suffocation | untested |
 | Num7 | Infinite magazine (shoot without reloading) | working |
 | Num0 | Reset everything to the game's default values | working |
-| Num. | Save the last 60 s of movement values to `logs/trace-*.csv` (debugging aid) | working |
 
 Planned: more consumables (filters, materials, chemicals), no recoil, rapid fire, battery and gas mask features, no clip, and more. See [docs/progress.md](docs/progress.md).
 
@@ -48,7 +47,7 @@ exactly.
 
 ```
 src/MetroExodusTrainer.Core   process access, build check, offsets, features, code patches
-src/MetroExodusTrainer.Cli    console front-end (hotkeys, status display, trace recorder)
+src/MetroExodusTrainer.Cli    console front-end (hotkeys, status display)
 src/MetroExodusTrainer.Probe  read-only diagnostic
 tools/                        PDB symbol/type dump and disassembly scripts (Python)
 docs/                         research notes and progress

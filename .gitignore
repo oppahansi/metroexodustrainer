@@ -22,5 +22,3 @@ reference/
 .env
 .claude/settings.local.json
 
-# Trainer trace dumps
-logs/

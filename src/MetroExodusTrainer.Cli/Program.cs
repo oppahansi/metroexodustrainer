@@ -10,9 +10,7 @@ const int DrawEveryMs = 250;
 var trainer = new Trainer();
 var featureKeys = Enumerable.Range(0, trainer.Features.Count).Select(Hotkeys.ForFeature).ToArray();
 var featureDown = new bool[featureKeys.Length];
-bool resetDown = false, traceDown = false;
-var recorder = new TraceRecorder();
-string? dumpMessage = null;
+bool resetDown = false;
 GameProcess? current = null;
 
 // Put the game back to its defaults when the trainer is closed (Ctrl+C or window close).
@@ -51,22 +49,16 @@ while (true)
         bool reset = resetPressed && !resetDown && buildOk;
         resetDown = resetPressed;
 
-        bool tracePressed = Hotkeys.SaveTrace.IsDown();
-        if (tracePressed && !traceDown)
-            dumpMessage = $"Saved trace: {recorder.Dump()}";
-        traceDown = tracePressed;
-
         if (reset)
             trainer.ResetAll(game);
         else if (buildOk)
             trainer.Tick(game);
-        recorder.Sample(game, trainer.Player);
 
         long now = Environment.TickCount64;
         if (now - lastDraw >= DrawEveryMs)
         {
             lastDraw = now;
-            Draw(game, build, buildOk, trainer, featureKeys, dumpMessage);
+            Draw(game, build, buildOk, trainer, featureKeys);
         }
         Thread.Sleep(TickMs);
     }
@@ -101,7 +93,7 @@ static GameProcess WaitForGame()
     }
 }
 
-static void Draw(GameProcess game, BuildInfo build, bool buildOk, Trainer trainer, Hotkey[] featureKeys, string? dumpMessage)
+static void Draw(GameProcess game, BuildInfo build, bool buildOk, Trainer trainer, Hotkey[] featureKeys)
 {
     Console.SetCursorPosition(0, 0);
     var lines = new List<string>
@@ -118,10 +110,8 @@ static void Draw(GameProcess game, BuildInfo build, bool buildOk, Trainer traine
         lines.Add($"  {featureKeys[i].Label,-14} [{(trainer.Features[i].Enabled ? "ON " : "off")}]  {trainer.Features[i].Name}" +
                   (trainer.Features[i].Warning is { } w ? $"   !! {w}" : ""));
     lines.Add($"  {Hotkeys.Reset.Label,-14}       Reset everything to default values");
-    lines.Add($"  {Hotkeys.SaveTrace.Label,-14}       Save the last 60 s of movement values to logs/trace-*.csv");
     lines.Add("");
     lines.AddRange(Diagnostics(game, trainer));
-    lines.Add(dumpMessage ?? "");
     lines.Add("Ctrl+C to quit (restores defaults).");
 
     int width = Math.Max(Console.WindowWidth - 1, 40);
@@ -141,19 +131,10 @@ static string[] Diagnostics(GameProcess game, Trainer trainer)
 
     nint p = trainer.Player;
     string F(nint off) => game.TryRead<float>(p + off, out var v) ? v.ToString("F2") : "-";
-    string B(nint off) => game.TryRead<byte>(p + off, out var v) ? v.ToString() : "-";
-    string Quad(nint off) => $"{F(off)}/{F(off + 4)}/{F(off + 8)}/{F(off + 12)}";
-    string state = game.TryRead<uint>(p + Offsets.Player.StateReal, out var st) ? $"0x{st:X}" : "-";
     return
     [
         $"live: health={F(Offsets.Player.Health)} stamina={F(Offsets.Player.Stamina)} " +
-        $"freeze={B(Offsets.Player.StaminaFreeze)} can_use={B(Offsets.Player.CanUseStamina)} " +
-        $"state={B(Offsets.Player.StaminaState)} jump={F(Offsets.Player.BaseJump)} (suit default {SuitJump(game, p)}) speed_scale={speed} actor_flags={cheat}",
-        $"move: speed={F(Offsets.Player.MoveSpeed)} flags={state} tired={B(Offsets.Player.TiredForSprint)} " +
-        $"damaged={B(Offsets.Player.DamagedForSprint)} blend={F(Offsets.Player.VsSpeedBlend)}",
-        $"vs_speed walk/run/sprint/crouch={Quad(Offsets.Player.VsSpeed)}  target={Quad(Offsets.Player.VsSpeedTarget)}  " +
-        $"allowed={B(Offsets.Player.VsMoveAllowed)}/{B(Offsets.Player.VsMoveAllowed + 1)}/{B(Offsets.Player.VsMoveAllowed + 2)}/" +
-        $"{B(Offsets.Player.VsMoveAllowed + 3)}/{B(Offsets.Player.VsMoveAllowed + 4)}",
+        $"jump={F(Offsets.Player.BaseJump)} (suit default {SuitJump(game, p)}) speed_scale={speed} actor_flags={cheat}",
     ];
 }
 

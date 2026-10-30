@@ -31,6 +31,6 @@ Most of these need the inventory and weapon structures located first (see open q
 ## Infrastructure
 
 - Done: symbol and type dumps from the game's shipped PDB, disassembly helper, process attach, build check,
-  checked and reversible code patches and hooks, hotkeys, state trace recorder.
+  checked and reversible code patches and hooks, hotkeys.
 - Next: signature scanning so more game builds (Steam, GOG, older Enhanced builds) can be supported, and a
   graphical front-end.
