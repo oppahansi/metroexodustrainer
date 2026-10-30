@@ -48,3 +48,9 @@ Siblings: `_startup_entity` +0x20, `_view_entity` +0x30.
 ## Open questions
 - Inventory counts (medkits, filters, grenades) are not plain entity fields; trace `inventory_player` / `inventory_item`.
 - Weapon state (recoil, spread, overheat, jam, dirt) lives in `weapon_magazined` / `weapon_pneumo`; not yet mapped.
+
+## Movement and stamina findings (verified by disassembly, `tools/disasm.py`)
+- `cplayer::_base_speed` (+0x27e0) is only a per-suit setting copied in by `serial_update_suit`; movement code does not read it.
+- `cplayer::movement_speed_base` (RVA `0x817e50`) multiplies in the float at RVA `0x163dce8`, the value inside `g_player_speed_scale`. The trainer writes that for fast movement.
+- `_vs_speed` (+0x24f0: walk, run, sprint, crouch, jump, accel, brake) holds script-driven speed multipliers (1.0 default).
+- `cplayer::update_stamina` (RVA `0x818680`) takes its regeneration path whenever `_vs_stamina_freeze` (+0x2778) is non-zero, so the flag stops sprint drain.

@@ -29,12 +29,27 @@ public sealed class Invulnerability : Feature
     }
 }
 
+/// <summary>
+/// Freezes stamina drain (update_stamina takes its regeneration path while the freeze flag is set)
+/// and tops the value up every tick to cover jump costs.
+/// </summary>
 public sealed class InfiniteStamina : Feature
 {
+    private bool _origFreeze;
+
     public override string Name => "Infinite stamina";
 
-    protected override void Apply(GameProcess game, nint player) =>
+    protected override void OnEnable(GameProcess game, nint player) =>
+        _origFreeze = game.Read<byte>(player + Offsets.Player.StaminaFreeze) != 0;
+
+    protected override void Apply(GameProcess game, nint player)
+    {
+        game.Write<byte>(player + Offsets.Player.StaminaFreeze, 1);
         game.Write(player + Offsets.Player.Stamina, 1f);
+    }
+
+    protected override void Restore(GameProcess game, nint player) =>
+        game.Write<byte>(player + Offsets.Player.StaminaFreeze, _origFreeze ? (byte)1 : (byte)0);
 }
 
 /// <summary>Writes a float field every tick and restores the value it found when switched on.</summary>
@@ -53,10 +68,25 @@ public abstract class FloatOverride(nint offset, float value) : Feature
     protected override void Restore(GameProcess game, nint player) => game.Write(player + offset, _original);
 }
 
-/// <summary>Movement speed multiplier (1.0 is normal).</summary>
-public sealed class FastMovement() : FloatOverride(Offsets.Player.BaseSpeed, 1.75f)
+/// <summary>Scales movement speed through the engine's g_player_speed_scale variable (1.0 is normal).</summary>
+public sealed class FastMovement : Feature
 {
+    private const float Speed = 1.75f;
+    private float _original = 1f;
+
     public override string Name => "Fast movement";
+
+    protected override void OnEnable(GameProcess game, nint player)
+    {
+        if (game.TryRead<float>(game.Base + Offsets.PlayerSpeedScale, out var current))
+            _original = current;
+    }
+
+    protected override void Apply(GameProcess game, nint player) =>
+        game.Write(game.Base + Offsets.PlayerSpeedScale, Speed);
+
+    protected override void Restore(GameProcess game, nint player) =>
+        game.Write(game.Base + Offsets.PlayerSpeedScale, _original);
 }
 
 /// <summary>Jump height multiplier (1.0 is normal).</summary>

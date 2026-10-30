@@ -13,6 +13,9 @@ public static class Offsets
     /// <summary>RVA of the vtable for uobject_t&lt;player_new,0,25&gt;; used to confirm an entity is the player.</summary>
     public const long PlayerVtable = 0x11E2728;
 
+    /// <summary>RVA of the float inside the g_player_speed_scale console variable; multiplied into movement speed.</summary>
+    public const nint PlayerSpeedScale = 0x163DCE8;
+
     public static class Level
     {
         public const nint StartupEntity = 0x20;
