@@ -40,7 +40,7 @@ def derives_from(pdb, tid, target, depth=0):
     return False
 
 
-def main(exe, symbols, out_path):
+def main(exe, symbols, out_path, profile_path=None):
     pdb = Pdb(exe)
     found = {}
     ammo = []
@@ -83,33 +83,50 @@ def main(exe, symbols, out_path):
         f.write("namespace MetroExodusTrainer.Core.Generated;\n\n")
         f.write("/// <summary>Vtable RVAs of weapon classes that derive from weapon_magazined.</summary>\n")
         f.write("public static class MagazinedWeaponVtables\n{\n")
-        f.write("    public static readonly HashSet<long> Rvas =\n    [\n")
+        f.write("    public static HashSet<long> Rvas { get; internal set; } =\n    [\n")
         for cls, rva in rows:
             f.write(f"        0x{rva:X}, // {cls}\n")
         f.write("    ];\n}\n\n")
         f.write("/// <summary>Vtable RVAs of weapon_ammo (reserve ammo stack) items.</summary>\n")
         f.write("public static class AmmoItemVtables\n{\n")
-        f.write("    public static readonly HashSet<long> Rvas =\n    [\n")
+        f.write("    public static HashSet<long> Rvas { get; internal set; } =\n    [\n")
         for rva in sorted(ammo):
             f.write(f"        0x{rva:X},\n")
         f.write("    ];\n}\n\n")
         f.write("/// <summary>Vtable RVAs of entities that derive from base_npc (humans and monsters).</summary>\n")
         f.write("public static class NpcVtables\n{\n")
-        f.write("    public static readonly HashSet<long> Rvas =\n    [\n")
+        f.write("    public static HashSet<long> Rvas { get; internal set; } =\n    [\n")
         for cls, rva in sorted(npc, key=lambda r: r[1]):
             f.write(f"        0x{rva:X}, // {cls}\n")
         f.write("    ];\n}\n")
         f.write("\n/// <summary>Vtable RVAs of firearms that derive from weapon_pneumo (air pressure weapons).</summary>\n")
-        f.write("public static class PneumoWeaponVtables\n{\n    public static readonly HashSet<long> Rvas =\n    [\n")
+        f.write("public static class PneumoWeaponVtables\n{\n    public static HashSet<long> Rvas { get; internal set; } =\n    [\n")
         for cls, rva in pneumo:
             f.write(f"        0x{rva:X}, // {cls}\n")
         f.write("    ];\n}\n")
         for out, rvas in devices.items():
             f.write(f"\n/// <summary>Vtable RVAs of {DEVICES[out]} entities.</summary>\n")
-            f.write(f"public static class {out}\n{{\n    public static readonly HashSet<long> Rvas =\n    [\n")
+            f.write(f"public static class {out}\n{{\n    public static HashSet<long> Rvas {{ get; internal set; }} =\n    [\n")
             for rva in rvas:
                 f.write(f"        0x{rva:X},\n")
             f.write("    ];\n}\n")
+    if profile_path:
+        import json
+        import pefile
+        pe = pefile.PE(exe)
+        profile = {
+            "timeDateStamp": f"0x{pe.FILE_HEADER.TimeDateStamp:08X}",
+            "vtables": {
+                "MagazinedWeaponVtables": sorted({rva for _, rva in rows}),
+                "AmmoItemVtables": sorted(set(ammo)),
+                "NpcVtables": sorted({rva for _, rva in npc}),
+                "PneumoWeaponVtables": sorted({rva for _, rva in pneumo}),
+                **{out: sorted(set(rvas)) for out, rvas in devices.items()},
+            },
+        }
+        with open(profile_path, "w", encoding="utf-8") as pf:
+            json.dump(profile, pf, indent=1)
+        print(f"wrote profile {profile_path}")
     print(f"{len(npc)} npc vtables for {len({c for c, _ in npc})} classes")
     print(f"{len(rows)} vtables for {len({c for c, _ in rows})} classes ({len(found)} weapon-like classes seen)")
     skipped = sorted(set(found) - {c for c, _ in rows})
@@ -117,4 +134,4 @@ def main(exe, symbols, out_path):
 
 
 if __name__ == "__main__":
-    main(*sys.argv[1:4])
+    main(*sys.argv[1:5])

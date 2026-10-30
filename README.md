@@ -3,8 +3,8 @@
 An open-source, single-player trainer for **Metro Exodus Enhanced Edition**. It attaches to the running game,
 so nothing is injected permanently and nothing on disk is modified.
 
-Currently supports the **Epic Games Store build 2.0.1.1** only. The trainer refuses to apply anything on a
-different build.
+Fully supported: the **Epic Games Store build 2.0.1.1**. Other builds are partly supported, see
+[Other game builds](#other-game-builds).
 
 ## Features
 
@@ -68,6 +68,27 @@ What you can do: the source is in this repository, so read it and build it yours
 allow the file in your antivirus (or exclude the build folder). If a scanner flags a build, you can report it
 as a false positive to the vendor. Do not download prebuilt copies from other places. Nothing is installed, no
 network connections are made, and no game files are changed on disk.
+
+## Other game builds
+
+On any build other than 2.0.1.1 the trainer finds the game addresses it needs by scanning the game's code for byte
+signatures (`tools/gen_signatures.py` makes them from the known build, and the scan finds the same code in another
+build as long as that code is unchanged). Each code patch and hook also checks the exact original bytes before it
+writes anything.
+
+- If the essential addresses are found, the features that only need addresses work (invulnerability, stamina, speed,
+  jump, fly mode, accuracy, rapid fire, invisibility, deaf enemies, freeze time, gas mask free).
+- Features that recognise game objects by class (weapons, ammo and items, NPCs, devices) need a **profile**: a JSON
+  file of that build's class tables. Make one from the game build and its PDB with
+  `python tools/gen_weapon_vtables.py <MetroExodus.exe> <symbols.tsv> <out.cs> <profile.json>` and put the JSON in a
+  `profiles` folder next to the trainer. Without a profile those features are shown as unavailable.
+- Struct layouts (member offsets) are assumed to be the same in other builds. Nothing guarantees that, so treat other
+  builds as experimental and keep a save.
+- If the essential addresses cannot be found, the trainer does nothing and says so.
+
+Check what a build gets with `dotnet run --project src/MetroExodusTrainer.Cli -c Release -- support`
+(`scan` compares the scan with the stored addresses; set `METROTRAINER_FORCE_SCAN=1` to test the scan path on the
+known build).
 
 ## How it works
 

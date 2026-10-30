@@ -45,5 +45,7 @@ Most of these need the inventory and weapon structures located first (see open q
 - Done: symbol and type dumps from the game's shipped PDB, disassembly helper, process attach, build check,
   checked and reversible code patches and hooks, hotkeys.
 - Done: WPF graphical front-end (categories, toggle switches, two columns).
-- Next: signature scanning so more game builds (Steam, GOG, older Enhanced builds) can be supported, and
-  polish of the graphical front-end.
+- Done: signature scanning. Addresses are found by byte signatures on other builds (self-test: all 16 match the known
+  build, 33 ms); class-based features use JSON profiles per build; unavailable features are switched off and say why.
+  Untested on any other real build, since only the Epic 2.0.1.1 build is available here.
+- Next: polish of the graphical front-end.

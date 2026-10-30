@@ -211,3 +211,12 @@ Num0 therefore writes real defaults, whether or not the feature is on:
 - Where the medkit, filter and throwable counts live (unlimited medkits and throwables rely on the cheat flag and are not yet verified in game).
 - Weapon dirt (`apply_dirt_modifiers` RVA `0x8E8E70`) and scope sway (`update_sway_param` RVA `0x8EAE50`).
 - Signature scanning to support more than build 2.0.1.1 (Steam, GOG, older Enhanced builds).
+
+## Signature scanning
+
+`tools/gen_signatures.py` picks, for each of the 16 addresses the trainer uses (functions, hook sites and globals), the smallest
+unique byte window from `.text` with rip-relative displacements, relative call targets and 64-bit immediates wildcarded. Globals are
+found through an instruction that accesses them (the address is read from its displacement). The scanner (`AddressBook.cs`)
+reproduces all 16 stored values on the known build in about 33 ms. Vtable-based recognition could not be derived from function
+pointers: the class families' vtables do not share distinguishing function pointers, and the binary has no RTTI, so other builds
+need a per-build profile made with the PDB.

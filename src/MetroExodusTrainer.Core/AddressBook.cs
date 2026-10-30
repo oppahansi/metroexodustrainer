@@ -43,9 +43,10 @@ public sealed record BuildSupport(
     public string Summary => Level switch
     {
         BuildSupportLevel.Known => "Known game build.",
-        BuildSupportLevel.Scanned => Missing.Count == 0
-            ? "Other game build: addresses found by scanning. Weapon, item and enemy features need tables for this build and are off."
-            : $"Other game build: {Missing.Count} address(es) not found ({string.Join(", ", Missing)}). Affected features are off.",
+        BuildSupportLevel.Scanned => (Missing.Count == 0
+            ? "Other game build: addresses found by scanning."
+            : $"Other game build: {Missing.Count} address(es) not found ({string.Join(", ", Missing)}); affected features are off.") +
+            (VtablesAvailable ? " Class tables loaded from a profile." : " No profile for this build: weapon, item and enemy features are off."),
         _ => $"Other game build: essential addresses not found ({string.Join(", ", Missing)}).",
     };
 }
@@ -66,6 +67,7 @@ public static class AddressBook
         bool known = build.FileVersion == Offsets.KnownFileVersion &&
                      Environment.GetEnvironmentVariable("METROTRAINER_FORCE_SCAN") != "1";
         RestoreDefaults();
+        BuildProfiles.RestoreDefaults();
         var scan = SignatureScanner.Scan(game, Generated.GameSignatures.All);
 
         var moved = new List<string>();
@@ -94,7 +96,7 @@ public static class AddressBook
             return new BuildSupport(BuildSupportLevel.Known, [], moved, true);
 
         var level = Essential.Any(missing.Contains) ? BuildSupportLevel.Unsupported : BuildSupportLevel.Scanned;
-        return new BuildSupport(level, missing, moved, false);
+        return new BuildSupport(level, missing, moved, level == BuildSupportLevel.Scanned && BuildProfiles.TryApply(build));
     }
 
     /// <summary>Puts the stored values of the known build back (used when the game restarts as a different build).</summary>

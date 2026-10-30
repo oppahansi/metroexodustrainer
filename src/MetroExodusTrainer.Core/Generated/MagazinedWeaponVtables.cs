@@ -4,7 +4,7 @@ namespace MetroExodusTrainer.Core.Generated;
 /// <summary>Vtable RVAs of weapon classes that derive from weapon_magazined.</summary>
 public static class MagazinedWeaponVtables
 {
-    public static readonly HashSet<long> Rvas =
+    public static HashSet<long> Rvas { get; internal set; } =
     [
         0x122D3D8, // weapon_2012
         0x122D3D0, // weapon_2012
@@ -275,7 +275,7 @@ public static class MagazinedWeaponVtables
 /// <summary>Vtable RVAs of weapon_ammo (reserve ammo stack) items.</summary>
 public static class AmmoItemVtables
 {
-    public static readonly HashSet<long> Rvas =
+    public static HashSet<long> Rvas { get; internal set; } =
     [
         0x115EA10,
         0x115EA48,
@@ -293,7 +293,7 @@ public static class AmmoItemVtables
 /// <summary>Vtable RVAs of entities that derive from base_npc (humans and monsters).</summary>
 public static class NpcVtables
 {
-    public static readonly HashSet<long> Rvas =
+    public static HashSet<long> Rvas { get; internal set; } =
     [
         0x115EA10, // anomaly
         0x115EA10, // aqua_female
@@ -802,7 +802,7 @@ public static class NpcVtables
 /// <summary>Vtable RVAs of firearms that derive from weapon_pneumo (air pressure weapons).</summary>
 public static class PneumoWeaponVtables
 {
-    public static readonly HashSet<long> Rvas =
+    public static HashSet<long> Rvas { get; internal set; } =
     [
         0x123B138, // weapon_flamethrower
         0x123B0E0, // weapon_flamethrower
@@ -892,7 +892,7 @@ public static class PneumoWeaponVtables
 /// <summary>Vtable RVAs of gasmask entities.</summary>
 public static class GasmaskVtables
 {
-    public static readonly HashSet<long> Rvas =
+    public static HashSet<long> Rvas { get; internal set; } =
     [
         0x115EA48,
         0x1192C98,
@@ -915,7 +915,7 @@ public static class GasmaskVtables
 /// <summary>Vtable RVAs of charger entities.</summary>
 public static class ChargerVtables
 {
-    public static readonly HashSet<long> Rvas =
+    public static HashSet<long> Rvas { get; internal set; } =
     [
         0x115EA48,
         0x1192C98,
@@ -939,7 +939,7 @@ public static class ChargerVtables
 /// <summary>Vtable RVAs of nightvision entities.</summary>
 public static class NightVisionVtables
 {
-    public static readonly HashSet<long> Rvas =
+    public static HashSet<long> Rvas { get; internal set; } =
     [
         0x115EA48,
         0x1192C98,
@@ -962,7 +962,7 @@ public static class NightVisionVtables
 /// <summary>Vtable RVAs of weapon_hellbreath entities.</summary>
 public static class HellbreathVtables
 {
-    public static readonly HashSet<long> Rvas =
+    public static HashSet<long> Rvas { get; internal set; } =
     [
         0x115EA48,
         0x1192C98,
