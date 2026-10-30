@@ -39,7 +39,7 @@ public static class Offsets
         public const nint HeadPitch = 0x9E0;           // cplayer::_head_angles.x, radians, negative looking up
         public const nint HeadYaw = 0x9E4;             // cplayer::_head_angles.y, radians
         public const nint MoveByVelEx = 0x792020;      // mov_control_nx_player::move_by_vel_ex, called every frame per mover
-        public const nint MoveNoCollision = 0x791730;  // mov_control_nx_player::move_no_collision(this, &displacement, flag, scale)
+        public const nint StepConstant = 0x16FE244;    // float passed as the step time by move_no_collision to apply_move_disp (vtable +0x320)
     }
 
     /// <summary>Air pressure of weapon_pneumo-derived firearms.</summary>
