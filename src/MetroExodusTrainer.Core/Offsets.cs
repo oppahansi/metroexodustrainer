@@ -26,7 +26,10 @@ public static class Offsets
     public static class Player
     {
         public const nint Health = 0x3B8;
+        public const nint EvadeState = 0x1491;
         public const nint MoveSpeed = 0x14A0;
+        public const nint AnimSpeedCoef = 0xFB0;
+        public const nint StateTarget = 0x1D54;
         public const nint StateReal = 0x1D50;        // movement state bit flags
         public const nint TiredForSprint = 0x1D6E;
         public const nint DamagedForSprint = 0x1D6F;

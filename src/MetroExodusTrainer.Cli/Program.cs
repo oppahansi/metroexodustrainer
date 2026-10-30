@@ -7,10 +7,13 @@ using MetroExodusTrainer.Core;
 const int TickMs = 10;
 const int DrawEveryMs = 250;
 const int ResetKey = 0x7B; // F12
+const int DumpKey = 0x7A;  // F11
 int[] featureKeys = [0x70, 0x71, 0x72, 0x73]; // F1..F4
 
 var trainer = new Trainer();
-var down = new bool[featureKeys.Length + 1];
+var down = new bool[featureKeys.Length + 2];
+var recorder = new TraceRecorder();
+string? dumpMessage = null;
 GameProcess? current = null;
 
 // Put the game back to its defaults when the trainer is closed (Ctrl+C or window close).
@@ -40,7 +43,7 @@ while (true)
         bool reset = false;
         for (int i = 0; i < down.Length; i++)
         {
-            int key = i < featureKeys.Length ? featureKeys[i] : ResetKey;
+            int key = i < featureKeys.Length ? featureKeys[i] : i == featureKeys.Length ? ResetKey : DumpKey;
             bool pressed = (GetAsyncKeyState(key) & 0x8000) != 0;
             if (pressed && !down[i] && buildOk)
             {
@@ -48,6 +51,8 @@ while (true)
                     trainer.Features[i].Toggle();
                 else if (i == featureKeys.Length)
                     reset = true;
+                else
+                    dumpMessage = $"Saved trace: {recorder.Dump()}";
             }
             down[i] = pressed;
         }
@@ -56,12 +61,13 @@ while (true)
             trainer.ResetAll(game);
         else if (buildOk)
             trainer.Tick(game);
+        recorder.Sample(game, trainer.Player);
 
         long now = Environment.TickCount64;
         if (now - lastDraw >= DrawEveryMs)
         {
             lastDraw = now;
-            Draw(game, build, buildOk, trainer);
+            Draw(game, build, buildOk, trainer, dumpMessage);
         }
         Thread.Sleep(TickMs);
     }
@@ -96,7 +102,7 @@ static GameProcess WaitForGame()
     }
 }
 
-static void Draw(GameProcess game, BuildInfo build, bool buildOk, Trainer trainer)
+static void Draw(GameProcess game, BuildInfo build, bool buildOk, Trainer trainer, string? dumpMessage)
 {
     Console.SetCursorPosition(0, 0);
     var lines = new List<string>
@@ -110,9 +116,10 @@ static void Draw(GameProcess game, BuildInfo build, bool buildOk, Trainer traine
     for (int i = 0; i < trainer.Features.Count; i++)
         lines.Add($"  F{i + 1}   [{(trainer.Features[i].Enabled ? "ON " : "off")}]  {trainer.Features[i].Name}");
     lines.Add("  F12        Reset everything to default values");
+    lines.Add("  F11        Save the last 60 s of movement values to logs/trace-*.csv");
     lines.Add("");
     lines.AddRange(Diagnostics(game, trainer));
-    lines.Add("");
+    lines.Add(dumpMessage ?? "");
     lines.Add("Ctrl+C to quit (restores defaults).");
 
     int width = Math.Max(Console.WindowWidth - 1, 40);
