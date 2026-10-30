@@ -45,3 +45,31 @@ public sealed class LowEnemyHealth : Feature
         }
     }
 }
+
+/// <summary>
+/// NPCs no longer hear the player: sounds whose source is the player are dropped where NPCs take sounds in.
+/// Other sounds, and sight, are unaffected.
+/// </summary>
+public sealed class Deafen : Feature
+{
+    private readonly PlayerSoundHook _hook = new();
+
+    public override string Name => "Enemies cannot hear you";
+
+    protected override void OnEnable(GameProcess game, nint player) =>
+        Warning = _hook.TryApply(game, player) ? null : _hook.Error;
+
+    protected override void Apply(GameProcess game, nint player)
+    {
+        if (_hook.Applied)
+            _hook.SetPlayer(game, player);
+    }
+
+    protected override void Restore(GameProcess game, nint player)
+    {
+        _hook.Revert(game);
+        Warning = null;
+    }
+
+    protected override void OnShutdown(GameProcess game) => _hook.Revert(game);
+}

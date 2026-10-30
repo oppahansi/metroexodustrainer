@@ -68,6 +68,20 @@ if (args.Length > 2 && args[0] == "peek")
     return;
 }
 
+if (args.Length > 0 && args[0] == "sp")
+{
+    using var g = GameProcess.Attach() ?? throw new InvalidOperationException("game not running");
+    nint pl = g.ReadPointer(g.ReadPointer(g.Base + Offsets.GLevel) + 0x28);
+    nint sp = g.ReadPointer(pl + 0xE0);
+    Console.WriteLine($"player=0x{pl:X} sp=0x{sp:X} sp[0]=0x{g.ReadPointer(sp):X} sp[8]=0x{g.Read<long>(sp + 8):X}");
+    foreach (nint npc in Npcs.Find(g).Take(3))
+    {
+        nint s2 = g.ReadPointer(npc + 0xE0);
+        Console.WriteLine($"npc=0x{npc:X} sp=0x{s2:X} sp[0]=0x{g.ReadPointer(s2):X}");
+    }
+    return;
+}
+
 var trainer = new Trainer();
 var featureKeys = Enumerable.Range(0, trainer.Features.Count).Select(Hotkeys.ForFeature).ToArray();
 var featureDown = new bool[featureKeys.Length];

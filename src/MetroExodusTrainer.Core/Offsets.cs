@@ -33,6 +33,14 @@ public static class Offsets
         public const nint DayEnd = 0x50;             // u64
     }
 
+    /// <summary>Where NPCs take in sounds.</summary>
+    public static class Sound
+    {
+        public const nint SoundMemoryOnSound = 0xF8CCC0;   // sound_memory_manager::on_sound(this, sound data, ...)
+        public const nint ThreatMemoryOnSound = 0xB730C0;  // base_threat_memory_manager::on_sound(this, object data)
+        public const nint SharedBaseInEntity = 0xE0;       // an entity's intrusive_base subobject (what shared parts point to)
+    }
+
     /// <summary>The entity list and NPC fields.</summary>
     public static class Entities
     {

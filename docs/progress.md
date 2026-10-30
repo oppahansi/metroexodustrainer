@@ -20,6 +20,7 @@ Tested means confirmed working in the game (Epic build 2.0.1.1).
 | Rapid fire | tested (hook) |
 | Low enemy health | works (verified in game) |
 | Invisible to enemies | works (verified in game) |
+| Enemies cannot hear you | implemented (code hook on the NPC sound intake), not yet verified |
 | Freeze time of day | works (verified by reading the game clock) |
 | Unlimited medkits and throwables, no filter drain | implemented through the game's cheat flags, not yet verified |
 

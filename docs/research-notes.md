@@ -143,6 +143,11 @@ All fields are on the `weapon_magazined`-derived entity found through the invent
 - **Lights:** renderer console variables are objects (vtable, name, ...) whose value sits at object `+0x28`. `r_disable_lights`
   is at RVA `0x16502D8` (0 = normal); it switches off every light source, so it is not the "lights off" stealth feature. Others: `r_game_light_scale` float at `0x164DB90` (1.0), `r_disable_indirect_lighting` at `0x164E288`.
 
+- **Hearing:** NPCs take in sounds in `sound_memory_manager::on_sound` (RVA `0xF8CCC0`; the sound data's source is a shared part
+  pointer at `[data+8]`) and `base_threat_memory_manager::on_sound` (`0xB730C0`; weak pointer at `[data+0x28]`). A shared part's
+  first qword is the source object's `intrusive_base`, which is the entity + `0xE0`. Dropping sounds whose source is the player
+  makes NPCs deaf to it. `g_ai_mask` is only a vision debug overlay, not a switch for AI.
+
 ### Defaults and reset (Num0)
 Values captured when a feature is switched on can be stale if an earlier run was closed with the feature on.
 Num0 therefore writes real defaults, whether or not the feature is on:
