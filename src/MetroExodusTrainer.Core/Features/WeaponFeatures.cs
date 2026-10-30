@@ -21,6 +21,22 @@ public sealed class NoOverheat : WeaponFieldFeature
         game.Write(weapon + Offsets.Weapon.Heat, 0f);
 }
 
+/// <summary>
+/// Keeps every firearm clean. The weapon's dirt level is a half-float at +0xB0 (0 = clean, 1 = filthy); the game turns
+/// it into accuracy and jam penalties (<c>apply_dirt_modifiers</c>) and the workbench cleaning lowers it.
+/// There is nothing to restore: a clean weapon simply stays clean.
+/// </summary>
+public sealed class AlwaysClean : WeaponFieldFeature
+{
+    public override string Name => "Weapons never get dirty";
+
+    protected override void ApplyTo(GameProcess game, nint weapon)
+    {
+        if (game.TryRead<ushort>(weapon + Offsets.Weapon.Dirt, out var dirt) && dirt != 0)
+            game.Write<ushort>(weapon + Offsets.Weapon.Dirt, 0);
+    }
+}
+
 /// <summary>Keeps every weapon in the "not jammed" state.</summary>
 public sealed class NoJam : WeaponFieldFeature
 {

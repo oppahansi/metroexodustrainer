@@ -82,6 +82,48 @@ if (args.Length > 0 && args[0] == "sp")
     return;
 }
 
+if (args.Length > 0 && args[0] == "guns")
+{
+    using var g = GameProcess.Attach() ?? throw new InvalidOperationException("game not running");
+    nint pl = g.ReadPointer(g.ReadPointer(g.Base + Offsets.GLevel) + 0x28);
+    foreach (nint w in Firearms.Find(g, pl))
+    {
+        var b = g.ReadBytes(w + 0xB0, 8)!;
+        string H(int i) => ((float)BitConverter.ToHalf(b, i)).ToString("F3");
+        Console.WriteLine($"gun 0x{w:X} vt=0x{g.ReadPointer(w) - g.Base:X} halves b0={H(0)} b2={H(2)} b4={H(4)} b6={H(6)} ammo={g.Read<uint>(w + Offsets.Inventory.WeaponAmmoLoaded)}");
+    }
+    return;
+}
+
+if (args.Length > 0 && args[0] == "clean")
+{
+    using var g = GameProcess.Attach() ?? throw new InvalidOperationException("game not running");
+    nint pl = g.ReadPointer(g.ReadPointer(g.Base + Offsets.GLevel) + 0x28);
+    var guns = Firearms.Find(g, pl);
+    foreach (nint w in guns) g.Write(w + 0xB0, (ushort)0);
+    for (int i = 0; i < 8; i++)
+    {
+        Thread.Sleep(500);
+        Console.WriteLine(string.Join("  ", guns.Select(w => ((float)BitConverter.ToHalf(g.ReadBytes(w + 0xB0, 2)!, 0)).ToString("F3"))));
+    }
+    return;
+}
+
+if (args.Length > 0 && args[0] == "sway")
+{
+    using var g = GameProcess.Attach() ?? throw new InvalidOperationException("game not running");
+    nint pl = g.ReadPointer(g.ReadPointer(g.Base + Offsets.GLevel) + 0x28);
+    foreach (nint w in Firearms.Find(g, pl))
+    {
+        nint prm = g.ReadPointer(w + 0x240);
+        Console.WriteLine($"gun 0x{w:X} params=0x{prm:X}");
+        nint b = prm - 0x5C;
+        for (int o = 0x1200; o < 0x1240; o += 4)
+            Console.WriteLine($"   +0x{o:X}: {g.Read<float>(b + o)}  (0x{g.Read<uint>(b + o):X})");
+    }
+    return;
+}
+
 var trainer = new Trainer();
 var featureKeys = Enumerable.Range(0, trainer.Features.Count).Select(Hotkeys.ForFeature).ToArray();
 var featureDown = new bool[featureKeys.Length];

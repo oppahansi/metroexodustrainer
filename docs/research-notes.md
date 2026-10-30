@@ -152,6 +152,9 @@ All fields are on the `weapon_magazined`-derived entity found through the invent
   (RVA `0xA90940`) writes the factor to `+0x28` (cplayer `+0x2370`) and a smoothed value to `+0x1C`. `cplayer::lumin_calc`,
   `slow_stealth_luminocity` and the watch's light level read it. Making `update` store zeros darkens the watch indicator.
 
+- **Weapon dirt:** `weapon_magazined` keeps a half-float at `+0xB0` (0 clean, 1 filthy); `apply_dirt_modifiers` scales accuracy/jam
+  values by it and the workbench repair lowers it. Writing 0 sticks while idle.
+
 ### Defaults and reset (Num0)
 Values captured when a feature is switched on can be stale if an earlier run was closed with the feature on.
 Num0 therefore writes real defaults, whether or not the feature is on:

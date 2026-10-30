@@ -18,11 +18,13 @@ Tested means confirmed working in the game (Epic build 2.0.1.1).
 | No recoil | tested (code patch) |
 | Maximum accuracy | tested (code patch) |
 | Rapid fire | tested (hook) |
+| Weapons never get dirty | implemented (dirt half-float at weapon +0xB0), not yet verified |
 | Low enemy health | works (verified in game) |
 | Invisible to enemies | works (verified in game) |
 | Enemies cannot hear you | works (verified in game) |
 | Freeze time of day | works (verified by reading the game clock) |
-| Unlimited medkits and throwables, no filter drain | implemented through the game's cheat flags, not yet verified |
+| Unlimited medkits and throwables | works (verified in game) |
+| No filter drain / suffocation (gas mask) | implemented through the game cheat flags, not yet verified |
 
 ## Planned
 
@@ -33,7 +35,7 @@ Most of these need the inventory and weapon structures located first (see open q
   Molotov cocktails
 - Gas mask: durability, filter time, play without gas mask
 - Batteries and devices: flashlight and night vision charge, "Hellbreath" charge, air bottle pressure
-- Weapons: always clean (dirt), no scope sway
+- Weapons: no scope sway (sway parameters found in the weapon's static params, meaning of each still unknown)
 - Enemies and world: freeze enemies, no clip (still need research)
 
 ## Infrastructure

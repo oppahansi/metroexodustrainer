@@ -100,6 +100,7 @@ public static class Offsets
         /// <summary>RVA of the epilogue of weapon_magazined::calc_shot_interval, where the result sits in xmm6.</summary>
         public const nint CalcShotIntervalReturn = 0x8FC893;
 
+        public const nint Dirt = 0xB0;               // half-float dirt level, 0 = clean
         public const nint CurrentDispersion = 0x9E0; // float, spread added by movement and firing
         public const nint ShotInterval = 0xA64;      // float seconds between shots
         public const nint RecoilLevel = 0x1970;      // float

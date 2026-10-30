@@ -17,7 +17,7 @@ features, the next ones use Ctrl + Num1-Num9, then Alt + Num1-Num9.
 | Num2 | Infinite stamina (no sprint exhaustion) | working |
 | Num3 | Fast movement | working |
 | Num4 | High jump | working |
-| Num5 | Unlimited reserve ammo (reloads work, stacks filled to the carry limit), medkits and throwables | ammo working; medkits and throwables untested |
+| Num5 | Unlimited reserve ammo (reloads work, stacks filled to the carry limit), medkits and throwables | works |
 | Num6 | No filter drain / suffocation | untested |
 | Num7 | Infinite magazine (shoot without reloading) | working |
 | Num8 | No weapon overheat | working |
@@ -25,13 +25,14 @@ features, the next ones use Ctrl + Num1-Num9, then Alt + Num1-Num9.
 | Ctrl+Num1 | No recoil | working |
 | Ctrl+Num2 | Maximum accuracy (no spread) | working |
 | Ctrl+Num3 | Rapid fire (half the time between shots) | working |
-| Ctrl+Num4 | Invisible to enemies (they stop targeting you, and the watch light reads dark) | works |
-| Ctrl+Num5 | Low enemy health (hostile NPCs die in one hit) | works |
-| Ctrl+Num6 | Enemies cannot hear you | works |
-| Ctrl+Num7 | Freeze time of day | works |
+| Ctrl+Num4 | Weapons never get dirty | untested |
+| Ctrl+Num5 | Invisible to enemies (they stop targeting you, and the watch light reads dark) | works |
+| Ctrl+Num6 | Low enemy health (hostile NPCs die in one hit) | works |
+| Ctrl+Num7 | Enemies cannot hear you | works |
+| Ctrl+Num8 | Freeze time of day | works |
 | Num0 | Reset everything to the game's default values | working |
 
-Planned: more consumables (filters, materials, chemicals), always-clean weapons, no scope sway, battery and gas mask features, no clip, and more. See [docs/progress.md](docs/progress.md).
+Planned: more consumables (filters, materials, chemicals), no scope sway, battery and gas mask features, no clip, and more. See [docs/progress.md](docs/progress.md).
 
 ## Running it
 
