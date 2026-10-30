@@ -70,3 +70,8 @@ Siblings: `_startup_entity` +0x20, `_view_entity` +0x30.
 - `_move_speed` (+0x14a0) is the *measured* velocity of the physics body (written by `simulate_accel_physic`), not a setting.
 - With infinite stamina on, a 14 s sprint held 7.31 then dropped to ~4.9 (x0.667) while stamina, state flags, `_vs_speed`, `_vs_move_allowed` all stayed unchanged.
 - Base speed comes from `_vs_speed_mod` (+0x2548 array of 24-byte `{current,target,blend,?,block*}`, u16 count at +0x2552): the top entry, or the static-params float at `[+0x240]+0xe04` when empty. Scripts push entries via `vs_actor_movement_ex_set` (RVA `0xa4cbd0`).
+
+## The sprint "exhaustion" is a timed boost modifier (second capture)
+- Sprinting pushes a `_vs_speed_mod` entry whose target ramps 1.0 -> 1.5 (blend 10). About 13 s later, with the sprint flag (`_state_real & 0x400`) still set, the game switches that target back to 1.0; the speed eases down and the entry is popped. 7.31 -> 4.88 equals 1/1.5.
+- Stamina, `_can_use_stamina`, `_vs_speed`, and `_vs_move_allowed` are unchanged during it, so stamina is not involved.
+- Infinite stamina therefore re-asserts the boost target while sprint is held, and releases it as soon as sprint is released.
