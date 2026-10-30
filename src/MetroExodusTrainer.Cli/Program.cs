@@ -239,6 +239,53 @@ if (args.Length > 0 && args[0] == "dirs")
     return;
 }
 
+if (args.Length > 1 && args[0] == "trace")
+{
+    // trace <seconds> <plain|fly>: records the player's movement state about every 10 ms to research/dumps/fly-trace-<mode>.csv.
+    // "plain" only watches; "fly" also switches the fly feature on and runs it, so close other trainers first.
+    using var g = GameProcess.Attach() ?? throw new InvalidOperationException("game not running");
+    int seconds = int.Parse(args[1]);
+    bool fly = args.Length > 2 && args[2] == "fly";
+    var tr = new Trainer();
+    var flyFeature = tr.Features.OfType<MetroExodusTrainer.Core.Features.FlyMode>().First();
+    nint pl = g.ReadPointer(g.ReadPointer(g.Base + Offsets.GLevel) + 0x28);
+    if (!fly) flyFeature.Hook.TryApply(g, pl);
+    else flyFeature.Set(true);
+    var csv = new System.Text.StringBuilder("t_ms,calls,dt,keys,enabled,ent_x,ent_y,ent_z,mc_x,mc_y,mc_z,pvel_x,pvel_y,pvel_z,lvel_x,lvel_y,lvel_z,mode,contacts,afterjump,state_real,mc_flags\n");
+    long start = Environment.TickCount64;
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+    string F(float v) => v.ToString("F3", inv);
+    try
+    {
+        while (Environment.TickCount64 - start < seconds * 1000L && !g.HasExited)
+        {
+            if (fly) tr.Tick(g);
+            nint mover = flyFeature.Hook.ReadMover(g);
+            nint cct = mover == 0 ? 0 : g.ReadPointer(mover + 0x68);
+            var d = flyFeature.Hook.ReadDiagnostics(g);
+            int keys = (Hotkeys.KeyDown(0x57) ? 1 : 0) | (Hotkeys.KeyDown(0x41) ? 2 : 0) | (Hotkeys.KeyDown(0x53) ? 4 : 0) | (Hotkeys.KeyDown(0x44) ? 8 : 0)
+                     | (Hotkeys.KeyDown(0x20) ? 16 : 0) | (Hotkeys.KeyDown(0x43) ? 32 : 0) | (Hotkeys.KeyDown(0xA0) ? 64 : 0);
+            float R(nint a) => g.Read<float>(a);
+            csv.Append($"{Environment.TickCount64 - start},{d.Count},{F(d.DtRaw)},{keys},{(flyFeature.Enabled ? 1 : 0)},");
+            csv.Append($"{F(R(pl + 0x110 + 48))},{F(R(pl + 0x110 + 52))},{F(R(pl + 0x110 + 56))},");
+            csv.Append(mover == 0 ? "0,0,0," : $"{F(R(mover + 0xBC))},{F(R(mover + 0xC0))},{F(R(mover + 0xC4))},");
+            csv.Append(cct == 0 ? "0,0,0,0,0,0," : $"{F(R(cct + 0x35C))},{F(R(cct + 0x360))},{F(R(cct + 0x364))},{F(R(cct + 0x374))},{F(R(cct + 0x378))},{F(R(cct + 0x37C))},");
+            csv.Append(cct == 0 ? "0,0,0," : $"{g.Read<byte>(cct + 0x2204)},{g.Read<uint>(cct + 0x21E8)},{g.Read<ushort>(cct + 0x3DA)},");
+            csv.Append($"{g.Read<uint>(pl + Offsets.Player.StateReal)},{(mover == 0 ? 0u : g.Read<uint>(mover + 0x258))}\n");
+            Thread.Sleep(10);
+        }
+    }
+    finally
+    {
+        if (fly) tr.ResetAll(g);
+        else flyFeature.Hook.Revert(g);
+    }
+    string path = $"research/dumps/fly-trace-{(fly ? "fly" : "plain")}.csv";
+    File.WriteAllText(path, csv.ToString());
+    Console.WriteLine($"wrote {path}");
+    return;
+}
+
 var trainer = new Trainer();
 var featureKeys = trainer.Features.Select(f => Hotkeys.ForFeature(f.Slot)).ToArray();
 var featureDown = new bool[featureKeys.Length];

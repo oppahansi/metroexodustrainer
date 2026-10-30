@@ -176,6 +176,10 @@ All fields are on the `weapon_magazined`-derived entity found through the invent
   with `fly velocity x step time`. Look direction: `cplayer::_head_angles` at `+0x9E0` (pitch, negative looking up) and `+0x9E4`
   (yaw); `_forward_dir`/`_eye_dir` do not follow the view.
 
+  First fly attempt result: the player is a dynamic physics body (`nx_dynamic_cct`, two `PxRigidDynamic` actors); `commit` runs in the
+  physics step and consumes queued input, so a displacement from `move_no_collision` is fought by gravity, jumping and input. A
+  movement trace tool (`Cli trace <seconds> plain|fly`) records the state to `research/dumps/fly-trace-*.csv` for analysis.
+
 ### Defaults and reset (Num0)
 Values captured when a feature is switched on can be stale if an earlier run was closed with the feature on.
 Num0 therefore writes real defaults, whether or not the feature is on:

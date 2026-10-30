@@ -229,6 +229,9 @@ public sealed class FlyMode : Feature
 
     private readonly PlayerFlyHook _hook = new();
 
+    /// <summary>The movement hook, exposed for the trace tool.</summary>
+    public PlayerFlyHook Hook => _hook;
+
     public override string Name => "Fly mode (WASD, Space up, C down, Shift fast)";
 
     protected override void OnEnable(GameProcess game, nint player) =>
