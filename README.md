@@ -34,6 +34,7 @@ features, the next ones use Ctrl + Num1-Num9, then Alt + Num1-Num9.
 | Alt+Num1 | Gas mask never breaks (durability stays full) | untested |
 | Alt+Num2 | Unlimited flashlight & night vision charge (hand charger voltage kept full) | untested |
 | Alt+Num3 | Air weapons stay pressurized (Tikhar, Hellbreath, Helsing, flamethrower, ...) | untested |
+| Alt+Num4 | Fly mode: no gravity, no collisions (W/A/S/D along the look direction, Space up, C down, Left Shift fast) | untested |
 | Num0 | Reset everything to the game's default values | working |
 
 Planned: filters, battery and gas mask features, no clip, and more. See [docs/progress.md](docs/progress.md).

@@ -83,6 +83,25 @@ public static class Hotkeys
 
     private static bool Down(int vk) => (GetAsyncKeyState(vk) & 0x8000) != 0;
 
+    /// <summary>True while the given virtual key is held (any window).</summary>
+    public static bool KeyDown(int vk) => Down(vk);
+
+    /// <summary>Process id that owns the foreground window, or 0.</summary>
+    public static int ForegroundProcessId()
+    {
+        nint window = GetForegroundWindow();
+        if (window == 0)
+            return 0;
+        GetWindowThreadProcessId(window, out uint pid);
+        return (int)pid;
+    }
+
+    [DllImport("user32.dll")]
+    private static extern nint GetForegroundWindow();
+
+    [DllImport("user32.dll")]
+    private static extern uint GetWindowThreadProcessId(nint window, out uint processId);
+
     [DllImport("user32.dll")]
     private static extern short GetAsyncKeyState(int vKey);
 

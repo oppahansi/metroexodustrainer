@@ -206,6 +206,39 @@ if (args.Length > 0 && args[0] == "pneumo")
     return;
 }
 
+if (args.Length > 0 && args[0] == "flyprobe")
+{
+    // Installs the fly hook passively (fly disabled) and prints what the game passes for the player for a few seconds.
+    using var g = GameProcess.Attach() ?? throw new InvalidOperationException("game not running");
+    nint pl = g.ReadPointer(g.ReadPointer(g.Base + Offsets.GLevel) + 0x28);
+    var hook = new PlayerFlyHook();
+    if (!hook.TryApply(g, pl)) { Console.WriteLine(hook.Error); return; }
+    try
+    {
+        for (int i = 0; i < 12; i++)
+        {
+            Thread.Sleep(500);
+            var d = hook.ReadDiagnostics(g);
+            Console.WriteLine($"calls={d.Count} 5th-arg-raw={d.DtRaw} xmm3={d.Xmm3} vel=({d.Vx}, {d.Vy}, {d.Vz})");
+        }
+    }
+    finally { hook.Revert(g); }
+    return;
+}
+
+if (args.Length > 0 && args[0] == "dirs")
+{
+    using var g = GameProcess.Attach() ?? throw new InvalidOperationException("game not running");
+    nint pl = g.ReadPointer(g.ReadPointer(g.Base + Offsets.GLevel) + 0x28);
+    for (int i = 0; i < 6; i++)
+    {
+        string V(nint o, int n = 4) => string.Join(", ", Enumerable.Range(0, n).Select(k => g.Read<float>(pl + o + k * 4).ToString("F3")));
+        Console.WriteLine($"fwd=({V(0xF40)}) eye=({V(0xF50)}) head_ang=({V(0x9E0, 3)}) body_ang=({V(0x9EC, 3)}) pos=({V(0x110 + 48, 3)})");
+        Thread.Sleep(1000);
+    }
+    return;
+}
+
 var trainer = new Trainer();
 var featureKeys = trainer.Features.Select(f => Hotkeys.ForFeature(f.Slot)).ToArray();
 var featureDown = new bool[featureKeys.Length];

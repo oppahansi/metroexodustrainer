@@ -33,6 +33,15 @@ public static class Offsets
         public const nint DayEnd = 0x50;             // u64
     }
 
+    /// <summary>The character movement functions used for fly mode.</summary>
+    public static class Fly
+    {
+        public const nint HeadPitch = 0x9E0;           // cplayer::_head_angles.x, radians, negative looking up
+        public const nint HeadYaw = 0x9E4;             // cplayer::_head_angles.y, radians
+        public const nint MoveByVelEx = 0x792020;      // mov_control_nx_player::move_by_vel_ex, called every frame per mover
+        public const nint MoveNoCollision = 0x791730;  // mov_control_nx_player::move_no_collision(this, &displacement, flag, scale)
+    }
+
     /// <summary>Air pressure of weapon_pneumo-derived firearms.</summary>
     public static class Pneumo
     {

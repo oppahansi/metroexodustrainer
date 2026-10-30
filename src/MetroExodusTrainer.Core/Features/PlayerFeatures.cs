@@ -214,3 +214,64 @@ public sealed class HighJump : Feature
         game.Write(player + Offsets.Player.BaseJump, jump);
     }
 }
+
+/// <summary>
+/// Fly mode: the player floats and moves without gravity or collisions. A hook in the game's per-frame movement
+/// (<see cref="PlayerFlyHook"/>) replaces the character's normal movement with a displacement from the fly velocity this
+/// feature computes. W/A/S/D move along the look direction, Space goes up, C goes down, Left Shift is faster. Keys only
+/// count while the game window has focus. Switching it off hands movement back to the game, so the player falls.
+/// </summary>
+public sealed class FlyMode : Feature
+{
+    private const float Speed = 9f;          // game units (metres) per second
+    private const float BoostFactor = 3f;
+    private const int VkW = 0x57, VkA = 0x41, VkS = 0x53, VkD = 0x44, VkC = 0x43, VkSpace = 0x20, VkLShift = 0xA0;
+
+    private readonly PlayerFlyHook _hook = new();
+
+    public override string Name => "Fly mode (WASD, Space up, C down, Shift fast)";
+
+    protected override void OnEnable(GameProcess game, nint player) =>
+        Warning = _hook.TryApply(game, player) ? null : _hook.Error;
+
+    protected override void Apply(GameProcess game, nint player)
+    {
+        if (!_hook.Applied)
+            return;
+
+        _hook.SetPlayer(game, player);
+
+        float vx = 0, vy = 0, vz = 0;
+        if (Hotkeys.ForegroundProcessId() == game.Process.Id &&
+            game.TryRead<float>(player + Offsets.Fly.HeadPitch, out var pitch) &&
+            game.TryRead<float>(player + Offsets.Fly.HeadYaw, out var yaw) &&
+            float.IsFinite(pitch) && float.IsFinite(yaw))
+        {
+            // Pitch is negative when looking up; yaw 0 faces +Z. Forward follows the look direction, strafe is horizontal.
+            float cp = MathF.Cos(pitch), sp = MathF.Sin(pitch), sy = MathF.Sin(yaw), cy = MathF.Cos(yaw);
+            (float fx, float fy, float fz) = (sy * cp, -sp, cy * cp);
+            (float rx, float rz) = (cy, -sy);
+
+            float forward = (Hotkeys.KeyDown(VkW) ? 1 : 0) - (Hotkeys.KeyDown(VkS) ? 1 : 0);
+            float right = (Hotkeys.KeyDown(VkD) ? 1 : 0) - (Hotkeys.KeyDown(VkA) ? 1 : 0);
+            float up = (Hotkeys.KeyDown(VkSpace) ? 1 : 0) - (Hotkeys.KeyDown(VkC) ? 1 : 0);
+
+            float speed = Speed * (Hotkeys.KeyDown(VkLShift) ? BoostFactor : 1f);
+            vx = (fx * forward + rx * right) * speed;
+            vy = (fy * forward + up) * speed;
+            vz = (fz * forward + rz * right) * speed;
+        }
+
+        _hook.SetVelocity(game, vx, vy, vz);
+        _hook.SetEnabled(game, true);
+    }
+
+    protected override void Restore(GameProcess game, nint player)
+    {
+        _hook.SetEnabled(game, false);
+        _hook.Revert(game);
+        Warning = null;
+    }
+
+    protected override void OnShutdown(GameProcess game) => _hook.Revert(game);
+}

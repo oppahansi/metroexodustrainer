@@ -15,7 +15,7 @@ public sealed class Trainer
         new("Player",
         [
             new Invulnerability { Slot = 0 }, new InfiniteStamina { Slot = 1 }, new FastMovement { Slot = 2 },
-            new HighJump { Slot = 3 },
+            new HighJump { Slot = 3 }, new FlyMode { Slot = 21 },
         ]),
         new("Items",
         [

@@ -169,6 +169,13 @@ All fields are on the `weapon_magazined`-derived entity found through the invent
   (`*(weapon+0x240) - 0x5C`, at `+0x13E8` low, `+0x13EC` high, `+0x13F0` cap). Hellbreath is a pneumatic weapon, so it is covered by
   this and by the infinite magazine.
 
+- **Fly mode:** no developer noclip exists. The game moves characters through `mov_control_nx_player::move_by_vel_ex` (RVA
+  `0x792020`, about 210 calls/s for the player; the fifth stack argument is the step time, ~4.5 ms) which ends in the virtual
+  `apply_move_disp(this, &displacement, collision_mask, ...)`; the default mask is `0x20C43` and `move_no_collision` (`0x791730`)
+  passes 0. The trainer hooks `move_by_vel_ex` and, for the player's mover (owner shared part == player), calls `move_no_collision`
+  with `fly velocity x step time`. Look direction: `cplayer::_head_angles` at `+0x9E0` (pitch, negative looking up) and `+0x9E4`
+  (yaw); `_forward_dir`/`_eye_dir` do not follow the view.
+
 ### Defaults and reset (Num0)
 Values captured when a feature is switched on can be stale if an earlier run was closed with the feature on.
 Num0 therefore writes real defaults, whether or not the feature is on:
