@@ -86,3 +86,7 @@ Siblings: `_startup_entity` +0x20, `_view_entity` +0x30.
 - The entry is pushed by `vs::action_actor_movement_ex::on_activate` (-> `vs_actor_movement_ex_set`, RVA `0xa4cbd0`) and removed by `on_deactivate` (-> `vs_actor_movement_ex_reset`, RVA `0xa4c9a0`). The same deactivation also runs on a normal sprint release, so it cannot simply be disabled.
 - Infinite stamina re-creates the entry (owner null, current = target = boost) when it vanishes while sprint is still held, and sets its target back to 1.0 once sprint is released so the game pops it.
 - `ex_reset` removes entries whose owner is null or matches the caller's block, so a re-created entry is cleaned up by any later reset.
+
+## Why a re-created ownerless boost entry vanished (fifth capture)
+- `update_xform` (RVA `0x82fa10`, near `0x82fd39`) removes the top speed-modifier entry when the stack has exactly one entry, its owner (`[entry+0x10]`) is null and `|current - target| < eps`.
+- A re-created entry therefore needs the owner of the original boost entry (recorded while the boost was active). On sprint release the trainer sets target = 1.0 and clears the owner so the game ramps it down and removes it.

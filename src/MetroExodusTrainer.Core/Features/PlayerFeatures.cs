@@ -45,6 +45,7 @@ public sealed class InfiniteStamina : Feature
     private bool _origFreeze;
     private float _boost = 1f;       // highest sprint-boost target seen while sprinting
     private float _blend = 10f;      // blend rate of the boost entry, copied when re-creating it
+    private long _owner;             // script block that owns the boost entry; update_xform removes owner-less settled entries
     private float _lastTarget = 1f;  // top modifier target on the previous tick
     private bool _forced;            // we overrode or re-created the boost entry and must give it back
     private bool _hadBoost;          // the boost was active earlier in the sprint that is currently held
@@ -64,6 +65,7 @@ public sealed class InfiniteStamina : Feature
         _origFreeze = game.Read<byte>(player + Offsets.Player.StaminaFreeze) != 0;
         _boost = _lastTarget = 1f;
         _blend = 10f;
+        _owner = 0;
         _forced = _hadBoost = false;
         _heldTicks = 0;
         Warning = _sprintAllowedPatch.TryApply(game) ? null : _sprintAllowedPatch.Error;
@@ -92,7 +94,7 @@ public sealed class InfiniteStamina : Feature
         {
             // Sprint released: hand control back to the game if we were holding the boost.
             if (_forced && target != 0)
-                game.Write(target, 1f);
+                ReleaseBoost(game, target);
             _forced = _hadBoost = false;
             _lastTarget = 1f;
             _heldTicks = 0;
@@ -119,6 +121,8 @@ public sealed class InfiniteStamina : Feature
             _hadBoost = true;
             if (game.TryRead<float>(target + 4, out var blend) && blend > 0f)
                 _blend = blend;
+            if (game.TryRead<long>(target + 12, out var owner) && owner != 0)
+                _owner = owner;
         }
         else if (_forced || (_boost > 1f + Epsilon && _lastTarget > 1f + Epsilon && Math.Abs(value - 1f) < Epsilon))
         {
@@ -140,14 +144,28 @@ public sealed class InfiniteStamina : Feature
             return;
         }
 
+        if (_owner == 0)
+        {
+            // Without an owner the game removes the settled entry on the very next frame.
+            Warning = "could not restore the sprint boost (owner of the entry was not seen)";
+            return;
+        }
+
         game.Write(array, _boost);            // current
         game.Write(array + 4, _boost);        // target
         game.Write(array + 8, _blend);        // blend
         game.Write(array + 12, 0f);
-        game.Write<long>(array + 16, 0);      // no owning script block: any later reset removes it
+        game.Write<long>(array + 16, _owner); // same script block as the original entry; its next reset removes this one
         game.Write<ushort>(player + Offsets.Player.SpeedModCount, 1);
         _forced = true;
         _lastTarget = _boost;
+    }
+
+    /// <summary>Lets the game finish the boost: target back to 1.0 and no owner, so update_xform ramps it down and removes it.</summary>
+    private static void ReleaseBoost(GameProcess game, nint targetAddress)
+    {
+        game.Write(targetAddress, 1f);
+        game.Write<long>(targetAddress + 12, 0);
     }
 
     /// <summary>Address of the top speed-modifier's target field, or 0 if the stack is empty.</summary>
@@ -163,7 +181,7 @@ public sealed class InfiniteStamina : Feature
     {
         game.Write<byte>(player + Offsets.Player.StaminaFreeze, _origFreeze ? (byte)1 : (byte)0);
         if (_forced && TopModifierTarget(game, player) is var t and not 0)
-            game.Write(t, 1f);
+            ReleaseBoost(game, t);
         _forced = false;
         _sprintAllowedPatch.Revert(game);
         Warning = null;
