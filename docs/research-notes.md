@@ -14,16 +14,18 @@ Regenerate with `tools/dump_symbols.py` and `tools/dump_types.py` (output goes t
 | `g_game` | `0x1691c08` | pointer to `cgame` |
 | `g_player_speed_scale` | `0x163dcc0` | console variable, 48-byte object |
 
-## Locating the player (unverified, needs live test)
-`*(g_level) + 0x28` = `clevel::_control_entity` (`uobject*`), expected to be the `cplayer` while controlling Artyom.
+## Locating the player (verified live on 2.0.1.1)
+`*(g_level) + 0x28` = `clevel::_control_entity` (`uobject*`) is the player while controlling Artyom.
+Its vtable is `uobject_t<player_new,0,25>::vftable` at RVA `0x11E2728`; the trainer uses that to confirm the entity.
+`player_new` derives from `cplayer`, so the offsets below apply. Health is normalized (1.0 = full); stamina, speed and jump are 1.0 by default.
 Siblings: `_startup_entity` +0x20, `_view_entity` +0x30.
 
 ## `cplayer` fields (size 0x3c10)
 | Offset | Type | Field | Planned use |
 |---|---|---|---|
 | `0x03b8` | float | `_health` | invulnerability / health lock |
-| `0x0a93` | bool | `_immortal` | invulnerability |
-| `0x0a94` | bool | `_invulnerable` | invulnerability |
+| `0x0a93` bit 7 | bitfield | `_immortal` | invulnerability |
+| `0x0a94` bit 0 | bitfield | `_invulnerable` | invulnerability |
 | `0x161a` | bool | `_spend_filters` | infinite filter time |
 | `0x161c` | float | `_min_filter_time` | infinite filters |
 | `0x2778` | bool | `_vs_stamina_freeze` | infinite stamina |
@@ -44,6 +46,5 @@ Siblings: `_startup_entity` +0x20, `_view_entity` +0x30.
 | `vs::action_unlimited_ammo` | (class exists in the engine's script system) |
 
 ## Open questions
-- Verify the player pointer chain with the running game.
 - Inventory counts (medkits, filters, grenades) are not plain entity fields; trace `inventory_player` / `inventory_item`.
 - Weapon state (recoil, spread, overheat, jam, dirt) lives in `weapon_magazined` / `weapon_pneumo`; not yet mapped.

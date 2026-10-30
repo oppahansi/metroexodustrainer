@@ -52,6 +52,17 @@ public sealed class GameProcess : IDisposable
     public unsafe bool Write<T>(nint address, T value) where T : unmanaged =>
         NativeMethods.WriteProcessMemory(_handle, address, &value, sizeof(T), out var written) && written == sizeof(T);
 
+    public bool GetBit(nint address, int bit) => (Read<byte>(address) & (1 << bit)) != 0;
+
+    /// <summary>Sets or clears one bit of a byte, leaving the other bits untouched.</summary>
+    public bool SetBit(nint address, int bit, bool value)
+    {
+        if (!TryRead<byte>(address, out var b))
+            return false;
+        b = value ? (byte)(b | (1 << bit)) : (byte)(b & ~(1 << bit));
+        return Write(address, b);
+    }
+
     /// <summary>Reads the pointer stored at the address; returns 0 on failure.</summary>
     public nint ReadPointer(nint address) => TryRead<nint>(address, out var p) ? p : 0;
 

@@ -98,7 +98,12 @@ class Pdb:
                 self.layout(t, off, out)
             elif tag == TAG["Data"] and self.info(c, 8) == 7:  # DataIsMember only
                 t = self.info(c, TI_TYPEID)
-                out.append((off, self.info(t, TI_LENGTH) or 0, self.name(c) or "?", self.type_str(t)))
+                bits = self.info(c, TI_LENGTH)
+                bitpos = self.info(c, TI_BITPOSITION)
+                nm = self.name(c) or "?"
+                if bitpos is not None and bits is not None and bits < (self.info(t, TI_LENGTH) or 0) * 8:
+                    nm += f" : {bits} @bit{bitpos}"
+                out.append((off, self.info(t, TI_LENGTH) or 0, nm, self.type_str(t)))
         return out
 
 
