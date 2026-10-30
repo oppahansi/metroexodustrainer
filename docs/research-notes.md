@@ -114,6 +114,21 @@ a `weapon_magazined` class are ever written to.
   `0` and `0xFFFFFFFF` mean no usable limit.
 - With unlimited ammo on, every non-crafting ammo stack is raised to that limit (never lowered).
 
+### Weapon features
+All fields are on the `weapon_magazined`-derived entity found through the inventory (see Infinite magazine).
+
+- **No overheat / no jam:** `_heat` (float, `+0x1990`) and `_jam_state` (byte, `+0x19A0`) are kept at 0 by plain writes.
+- **No recoil:** the game recomputes `_recoil_vertical/horizontal/shake` every frame, so writing the fields
+  from outside only removes part of the kick. `weapon_magazined::recoil_curve_evaluate` (RVA `0x8F2F90`) is the single
+  function that turns the recoil level into kick; its first 5 bytes (`48 89 5C 24 08`) are replaced with
+  `xorps xmm0,xmm0; ret; nop` (`0F 57 C0 C3 90`). Its other callers only bound-loop (`readjust_recoil_level`).
+- **Maximum accuracy:** `weapon::fire_dispersion` (RVA `0xA60650`) returns the shot spread in xmm0 and is recomputed per
+  shot (the `+0x9E0` dispersion field is only one of its inputs). Patched the same way, from `48 8B C4 55 53`.
+  Shotguns also fire their pellets without spread.
+- **Rapid fire:** `_shot_interval` (`+0xA64`) is not the source of the cadence; `weapon_magazined::calc_shot_interval`
+  (RVA `0x8FC600`) computes it. A hook at its epilogue (RVA `0x8FC893`, the 16 bytes
+  `mov rbx,[rsp+90h]; movaps xmm0,xmm6; movaps xmm6,[rsp+40h]`) multiplies xmm6 by a factor kept in the stub (0.5).
+
 ### Defaults and reset (Num0)
 Values captured when a feature is switched on can be stale if an earlier run was closed with the feature on.
 Num0 therefore writes real defaults, whether or not the feature is on:
@@ -136,5 +151,5 @@ Num0 therefore writes real defaults, whether or not the feature is on:
 
 ## Open questions
 - Where the medkit, filter and throwable counts live (unlimited medkits and throwables rely on the cheat flag and are not yet verified in game).
-- Weapon state (recoil, spread, overheat, jam, dirt) in `weapon_magazined` / `weapon_pneumo`.
+- Weapon dirt (`apply_dirt_modifiers` RVA `0x8E8E70`) and scope sway (`update_sway_param` RVA `0x8EAE50`).
 - Signature scanning to support more than build 2.0.1.1 (Steam, GOG, older Enhanced builds).

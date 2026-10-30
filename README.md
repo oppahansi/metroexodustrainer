@@ -20,9 +20,14 @@ features, the next ones use Ctrl + Num1-Num9, then Alt + Num1-Num9.
 | Num5 | Unlimited reserve ammo (reloads work, stacks filled to the carry limit), medkits and throwables | ammo working; medkits and throwables untested |
 | Num6 | No filter drain / suffocation | untested |
 | Num7 | Infinite magazine (shoot without reloading) | working |
+| Num8 | No weapon overheat | working |
+| Num9 | No weapon jam | working |
+| Ctrl+Num1 | No recoil | working |
+| Ctrl+Num2 | Maximum accuracy (no spread) | working |
+| Ctrl+Num3 | Rapid fire (half the time between shots) | working |
 | Num0 | Reset everything to the game's default values | working |
 
-Planned: more consumables (filters, materials, chemicals), no recoil, rapid fire, battery and gas mask features, no clip, and more. See [docs/progress.md](docs/progress.md).
+Planned: more consumables (filters, materials, chemicals), always-clean weapons, no scope sway, battery and gas mask features, no clip, and more. See [docs/progress.md](docs/progress.md).
 
 ## Running it
 

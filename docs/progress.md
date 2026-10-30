@@ -14,6 +14,10 @@ Tested means confirmed working in the game (Epic build 2.0.1.1).
 | Reset to defaults (Num0, also on exit) | tested |
 | Unlimited reserve ammo (reloads work, stacks filled to the real carry limit) | tested |
 | Infinite magazine (16 firearms) | tested |
+| No overheat, no jam | tested |
+| No recoil | tested (code patch) |
+| Maximum accuracy | tested (code patch) |
+| Rapid fire | tested (hook) |
 | Unlimited medkits and throwables, no filter drain | implemented through the game's cheat flags, not yet verified |
 
 ## Planned
@@ -25,7 +29,7 @@ Most of these need the inventory and weapon structures located first (see open q
   Molotov cocktails
 - Gas mask: durability, filter time, play without gas mask
 - Batteries and devices: flashlight and night vision charge, "Hellbreath" charge, air bottle pressure
-- Weapons: no recoil, maximum accuracy, rapid fire, no overheat, no jam, always clean, no scope sway
+- Weapons: always clean (dirt), no scope sway
 - Enemies and world: low enemy health, invisibility, freeze enemies, time of day, lights off, no clip
 
 ## Infrastructure
