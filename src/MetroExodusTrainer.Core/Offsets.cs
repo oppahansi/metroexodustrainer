@@ -10,6 +10,18 @@ public static class Offsets
 
     public const nint GLevel = 0x1691C40;
 
+    /// <summary>
+    /// RVA of ps_actor_flags, a u32 of developer cheat flags that game code tests directly:
+    /// bit 0 god mode, bit 3 unlimited ammo / medkits / throwables, bit 7 gas mask filters and suffocation.
+    /// </summary>
+    public const nint PsActorFlags = 0x15A8824;
+
+    public static class ActorFlags
+    {
+        public const uint UnlimitedItems = 0x08;
+        public const uint FreeGasMask = 0x80;
+    }
+
     /// <summary>RVA of the vtable for uobject_t&lt;player_new,0,25&gt;; used to confirm an entity is the player.</summary>
     public const long PlayerVtable = 0x11E2728;
 

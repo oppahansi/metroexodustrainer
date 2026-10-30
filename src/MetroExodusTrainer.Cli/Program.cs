@@ -8,7 +8,7 @@ const int TickMs = 10;
 const int DrawEveryMs = 250;
 const int ResetKey = 0x7B; // F12
 const int DumpKey = 0x7A;  // F11
-int[] featureKeys = [0x70, 0x71, 0x72, 0x73]; // F1..F4
+int[] featureKeys = [0x70, 0x71, 0x72, 0x73, 0x74, 0x75]; // F1..F6
 
 var trainer = new Trainer();
 var down = new bool[featureKeys.Length + 2];
@@ -134,8 +134,9 @@ static string SuitJump(GameProcess game, nint player) =>
 static string[] Diagnostics(GameProcess game, Trainer trainer)
 {
     string speed = game.TryRead<float>(game.Base + Offsets.PlayerSpeedScale, out var sp) ? sp.ToString("F2") : "-";
+    string cheat = game.TryRead<uint>(game.Base + Offsets.PsActorFlags, out var cf) ? $"0x{cf:X}" : "-";
     if (!trainer.PlayerFound)
-        return [$"live: speed_scale={speed}"];
+        return [$"live: speed_scale={speed} actor_flags={cheat}"];
 
     nint p = trainer.Player;
     string F(nint off) => game.TryRead<float>(p + off, out var v) ? v.ToString("F2") : "-";
@@ -146,7 +147,7 @@ static string[] Diagnostics(GameProcess game, Trainer trainer)
     [
         $"live: health={F(Offsets.Player.Health)} stamina={F(Offsets.Player.Stamina)} " +
         $"freeze={B(Offsets.Player.StaminaFreeze)} can_use={B(Offsets.Player.CanUseStamina)} " +
-        $"state={B(Offsets.Player.StaminaState)} jump={F(Offsets.Player.BaseJump)} (suit default {SuitJump(game, p)}) speed_scale={speed}",
+        $"state={B(Offsets.Player.StaminaState)} jump={F(Offsets.Player.BaseJump)} (suit default {SuitJump(game, p)}) speed_scale={speed} actor_flags={cheat}",
         $"move: speed={F(Offsets.Player.MoveSpeed)} flags={state} tired={B(Offsets.Player.TiredForSprint)} " +
         $"damaged={B(Offsets.Player.DamagedForSprint)} blend={F(Offsets.Player.VsSpeedBlend)}",
         $"vs_speed walk/run/sprint/crouch={Quad(Offsets.Player.VsSpeed)}  target={Quad(Offsets.Player.VsSpeedTarget)}  " +

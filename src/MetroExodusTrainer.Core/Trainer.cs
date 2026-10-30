@@ -11,6 +11,8 @@ public sealed class Trainer
         new InfiniteStamina(),
         new FastMovement(),
         new HighJump(),
+        new UnlimitedItems(),
+        new FreeGasMask(),
     ];
 
     /// <summary>Address of the player found by the last tick, or 0.</summary>
