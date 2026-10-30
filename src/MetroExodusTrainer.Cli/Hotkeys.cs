@@ -26,9 +26,39 @@ static class Hotkeys
 
     private static readonly string[] LayerPrefix = ["", "Shift+", "Ctrl+", "Alt+"];
 
+    // Windows briefly reports Shift as released while a Shift+numpad combination is pressed, so a bare numpad key
+    // only counts once no modifier has been seen for this long.
+    private const long ModifierQuietMs = 100;
+    private static long _modifierSeen = long.MinValue / 2;
+
+    /// <summary>Call once per tick, before reading hotkeys, so the modifier history is current.</summary>
+    public static void Update()
+    {
+        if (Down(VkShift) || Down(VkControl) || Down(VkAlt))
+            _modifierSeen = Environment.TickCount64;
+    }
+
     public static int FeatureSlots => ShiftedNumpad.Length * LayerPrefix.Length;
 
     public static readonly Hotkey Reset = new("Num0", () => LayerHeld(Layer.None) && Down(VkNumpad0));
+
+    /// <summary>
+    /// Turns a raw "is down" reading into a stable one: a key counts as released only after it has been up for a
+    /// short time, so the key flicker Windows produces around Shift+numpad does not look like a second press.
+    /// </summary>
+    public sealed class Debouncer
+    {
+        private const long ReleaseMs = 50;
+        private long _lastDown = long.MinValue / 2;
+
+        public bool Held(bool rawDown)
+        {
+            long now = Environment.TickCount64;
+            if (rawDown)
+                _lastDown = now;
+            return now - _lastDown < ReleaseMs;
+        }
+    }
 
     public static bool NumLockOn => (GetKeyState(VkNumLock) & 1) != 0;
 
@@ -50,7 +80,8 @@ static class Hotkeys
     private static bool LayerHeld(Layer layer) =>
         Down(VkShift) == (layer == Layer.Shift) &&
         Down(VkControl) == (layer == Layer.Ctrl) &&
-        Down(VkAlt) == (layer == Layer.Alt);
+        Down(VkAlt) == (layer == Layer.Alt) &&
+        (layer != Layer.None || Environment.TickCount64 - _modifierSeen > ModifierQuietMs);
 
     private static bool Down(int vk) => (GetAsyncKeyState(vk) & 0x8000) != 0;
 

@@ -10,6 +10,8 @@ const int DrawEveryMs = 250;
 var trainer = new Trainer();
 var featureKeys = Enumerable.Range(0, trainer.Features.Count).Select(Hotkeys.ForFeature).ToArray();
 var featureDown = new bool[featureKeys.Length];
+var featureDebounce = featureKeys.Select(_ => new Hotkeys.Debouncer()).ToArray();
+var resetDebounce = new Hotkeys.Debouncer();
 bool resetDown = false;
 GameProcess? current = null;
 
@@ -37,15 +39,16 @@ while (true)
     long lastDraw = 0;
     while (!game.HasExited)
     {
+        Hotkeys.Update();
         for (int i = 0; i < featureKeys.Length; i++)
         {
-            bool pressed = featureKeys[i].IsDown();
+            bool pressed = featureDebounce[i].Held(featureKeys[i].IsDown());
             if (pressed && !featureDown[i] && buildOk)
                 trainer.Features[i].Toggle();
             featureDown[i] = pressed;
         }
 
-        bool resetPressed = Hotkeys.Reset.IsDown();
+        bool resetPressed = resetDebounce.Held(Hotkeys.Reset.IsDown());
         bool reset = resetPressed && !resetDown && buildOk;
         resetDown = resetPressed;
 
