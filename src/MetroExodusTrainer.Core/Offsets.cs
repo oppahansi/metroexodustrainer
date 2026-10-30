@@ -26,6 +26,13 @@ public static class Offsets
     public static class Player
     {
         public const nint Health = 0x3B8;
+        public const nint MoveSpeed = 0x14A0;
+        public const nint StateReal = 0x1D50;        // movement state bit flags
+        public const nint TiredForSprint = 0x1D6E;
+        public const nint DamagedForSprint = 0x1D6F;
+        public const nint VsSpeed = 0x24F0;          // walk, run, sprint, crouch multipliers (floats)
+        public const nint VsSpeedTarget = 0x250C;
+        public const nint VsSpeedBlend = 0x2530;
         public const nint Immortal = 0xA93;          // bit 7
         public const int ImmortalBit = 7;
         public const nint Invulnerable = 0xA94;      // bit 0

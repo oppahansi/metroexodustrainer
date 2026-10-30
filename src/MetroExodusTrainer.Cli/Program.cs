@@ -111,7 +111,7 @@ static void Draw(GameProcess game, BuildInfo build, bool buildOk, Trainer traine
         lines.Add($"  F{i + 1}   [{(trainer.Features[i].Enabled ? "ON " : "off")}]  {trainer.Features[i].Name}");
     lines.Add("  F12        Reset everything to default values");
     lines.Add("");
-    lines.Add(Diagnostics(game, trainer));
+    lines.AddRange(Diagnostics(game, trainer));
     lines.Add("");
     lines.Add("Ctrl+C to quit (restores defaults).");
 
@@ -120,18 +120,26 @@ static void Draw(GameProcess game, BuildInfo build, bool buildOk, Trainer traine
         Console.WriteLine(line.PadRight(width));
 }
 
-static string Diagnostics(GameProcess game, Trainer trainer)
+static string[] Diagnostics(GameProcess game, Trainer trainer)
 {
     string speed = game.TryRead<float>(game.Base + Offsets.PlayerSpeedScale, out var sp) ? sp.ToString("F2") : "-";
     if (!trainer.PlayerFound)
-        return $"live: speed_scale={speed}";
+        return [$"live: speed_scale={speed}"];
 
     nint p = trainer.Player;
     string F(nint off) => game.TryRead<float>(p + off, out var v) ? v.ToString("F2") : "-";
     string B(nint off) => game.TryRead<byte>(p + off, out var v) ? v.ToString() : "-";
-    return $"live: health={F(Offsets.Player.Health)} stamina={F(Offsets.Player.Stamina)} " +
-           $"freeze={B(Offsets.Player.StaminaFreeze)} can_use={B(Offsets.Player.CanUseStamina)} " +
-           $"state={B(Offsets.Player.StaminaState)} jump={F(Offsets.Player.BaseJump)} speed_scale={speed}";
+    string Quad(nint off) => $"{F(off)}/{F(off + 4)}/{F(off + 8)}/{F(off + 12)}";
+    string state = game.TryRead<uint>(p + Offsets.Player.StateReal, out var st) ? $"0x{st:X}" : "-";
+    return
+    [
+        $"live: health={F(Offsets.Player.Health)} stamina={F(Offsets.Player.Stamina)} " +
+        $"freeze={B(Offsets.Player.StaminaFreeze)} can_use={B(Offsets.Player.CanUseStamina)} " +
+        $"state={B(Offsets.Player.StaminaState)} jump={F(Offsets.Player.BaseJump)} speed_scale={speed}",
+        $"move: speed={F(Offsets.Player.MoveSpeed)} flags={state} tired={B(Offsets.Player.TiredForSprint)} " +
+        $"damaged={B(Offsets.Player.DamagedForSprint)} blend={F(Offsets.Player.VsSpeedBlend)}",
+        $"vs_speed walk/run/sprint/crouch={Quad(Offsets.Player.VsSpeed)}  target={Quad(Offsets.Player.VsSpeedTarget)}",
+    ];
 }
 
 partial class Program
