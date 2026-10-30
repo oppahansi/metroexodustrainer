@@ -4,6 +4,9 @@ namespace MetroExodusTrainer.Core.Features;
 public abstract class Feature
 {
     public abstract string Name { get; }
+
+    /// <summary>Fixed hotkey slot of this feature (see <see cref="Hotkeys.ForFeature"/>); never reused, so keys stay stable.</summary>
+    public int Slot { get; init; } = -1;
     public bool Enabled { get; private set; }
 
     /// <summary>Set when the feature could not fully apply (for example, a code patch was refused).</summary>

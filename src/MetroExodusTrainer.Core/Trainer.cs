@@ -9,17 +9,27 @@ public sealed record FeatureGroup(string Name, IReadOnlyList<Feature> Features);
 public sealed class Trainer
 {
     /// <summary>Features by category, in display order. Hotkey slots follow this order.</summary>
+    // Slot = fixed hotkey (0-8 Num1-9, 9-17 Ctrl+Num1-9, 18-26 Alt+Num1-9). Never renumber: new features take the next free slot.
     public IReadOnlyList<FeatureGroup> Groups { get; } =
     [
-        new("Player", [new Invulnerability(), new InfiniteStamina(), new FastMovement(), new HighJump()]),
-        new("Items", [new UnlimitedItems(), new FreeGasMask(), new InfiniteCraftResources()]),
+        new("Player",
+        [
+            new Invulnerability { Slot = 0 }, new InfiniteStamina { Slot = 1 }, new FastMovement { Slot = 2 },
+            new HighJump { Slot = 3 },
+        ]),
+        new("Items",
+        [
+            new UnlimitedItems { Slot = 4 }, new FreeGasMask { Slot = 5 }, new InfiniteCraftResources { Slot = 6 },
+            new GasMaskNeverBreaks { Slot = 18 }, new UnlimitedBattery { Slot = 19 },
+        ]),
         new("Weapons",
         [
-            new InfiniteMagazine(), new NoOverheat(), new NoJam(), new NoRecoil(), new MaxAccuracy(), new RapidFire(),
-            new AlwaysClean(),
+            new InfiniteMagazine { Slot = 7 }, new NoOverheat { Slot = 8 }, new NoJam { Slot = 9 },
+            new NoRecoil { Slot = 10 }, new MaxAccuracy { Slot = 11 }, new RapidFire { Slot = 12 },
+            new AlwaysClean { Slot = 13 },
         ]),
-        new("Enemies", [new Invisibility(), new LowEnemyHealth(), new Deafen()]),
-        new("World", [new FreezeTimeOfDay()]),
+        new("Enemies", [new Invisibility { Slot = 14 }, new LowEnemyHealth { Slot = 15 }, new Deafen { Slot = 16 }]),
+        new("World", [new FreezeTimeOfDay { Slot = 17 }]),
     ];
 
     public IReadOnlyList<Feature> Features { get; }

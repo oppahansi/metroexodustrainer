@@ -31,6 +31,8 @@ features, the next ones use Ctrl + Num1-Num9, then Alt + Num1-Num9.
 | Ctrl+Num7 | Low enemy health (hostile NPCs die in one hit) | works |
 | Ctrl+Num8 | Enemies cannot hear you | works |
 | Ctrl+Num9 | Freeze time of day | works |
+| Alt+Num1 | Gas mask never breaks (durability stays full) | untested |
+| Alt+Num2 | Unlimited flashlight & night vision charge (hand charger voltage kept full) | untested |
 | Num0 | Reset everything to the game's default values | working |
 
 Planned: filters, battery and gas mask features, no clip, and more. See [docs/progress.md](docs/progress.md).

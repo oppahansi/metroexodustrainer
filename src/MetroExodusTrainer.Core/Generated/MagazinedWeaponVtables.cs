@@ -798,3 +798,99 @@ public static class NpcVtables
         0x1214638, // frog
     ];
 }
+
+/// <summary>Vtable RVAs of gasmask entities.</summary>
+public static class GasmaskVtables
+{
+    public static readonly HashSet<long> Rvas =
+    [
+        0x115EA48,
+        0x1192C98,
+        0x11A4F78,
+        0x124FD20,
+        0x12653D8,
+        0x12654E8,
+        0x1265508,
+        0x1265B10,
+        0x1265B18,
+        0x1265C58,
+        0x1265C98,
+        0x1265D28,
+        0x1265D30,
+        0x1267390,
+        0x12673C0,
+    ];
+}
+
+/// <summary>Vtable RVAs of charger entities.</summary>
+public static class ChargerVtables
+{
+    public static readonly HashSet<long> Rvas =
+    [
+        0x115EA48,
+        0x1192C98,
+        0x1196D88,
+        0x11A4F78,
+        0x125DB08,
+        0x12807A0,
+        0x12807D8,
+        0x1280DE0,
+        0x1280F20,
+        0x1280F28,
+        0x1280F78,
+        0x1280F80,
+        0x1280FC0,
+        0x1282658,
+        0x12826B0,
+        0x12826B8,
+    ];
+}
+
+/// <summary>Vtable RVAs of nightvision entities.</summary>
+public static class NightVisionVtables
+{
+    public static readonly HashSet<long> Rvas =
+    [
+        0x115EA48,
+        0x1192C98,
+        0x1196D88,
+        0x11A4F78,
+        0x1282628,
+        0x12826E8,
+        0x12826F0,
+        0x1282CF8,
+        0x1282D00,
+        0x1282E40,
+        0x1282E80,
+        0x1282F90,
+        0x1282F98,
+        0x1284600,
+        0x1284630,
+    ];
+}
+
+/// <summary>Vtable RVAs of weapon_hellbreath entities.</summary>
+public static class HellbreathVtables
+{
+    public static readonly HashSet<long> Rvas =
+    [
+        0x115EA48,
+        0x1192C98,
+        0x1196B00,
+        0x1196D88,
+        0x1196DA8,
+        0x11A4F78,
+        0x11CFE18,
+        0x1242D60,
+        0x1244C40,
+        0x1245248,
+        0x1245388,
+        0x12453D8,
+        0x12453E0,
+        0x1245560,
+        0x12455A0,
+        0x12472B8,
+        0x1247310,
+        0x1247318,
+    ];
+}

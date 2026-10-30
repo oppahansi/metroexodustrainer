@@ -64,7 +64,7 @@ public static class Hotkeys
 
     public static Hotkey ForFeature(int index)
     {
-        if (index >= FeatureSlots)
+        if (index < 0 || index >= FeatureSlots)
             return new Hotkey("(none)", () => false);
 
         var layer = (Layer)(index / SlotsPerLayer);

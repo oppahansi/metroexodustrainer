@@ -160,6 +160,10 @@ All fields are on the `weapon_magazined`-derived entity found through the invent
   and zeroing stabilize-speed makes the weapon drift off its aim position. The wobble comes from elsewhere (idle animation or
   sight data).
 
+- **Devices:** the gas mask entity keeps its durability in `_health` (`+0x3B8`, 1 = new) and a timer pair at `+0xB50`/`+0xB54`
+  (180/300 seen). The hand charger (`electricity_controller`) powers the flashlight and night vision: `_target_voltage` `+0xB58` and
+  `_voltage` `+0xB5C`, 0..1. Hotkey slots are fixed per feature (`Feature.Slot`), so adding a feature never moves existing keys.
+
 ### Defaults and reset (Num0)
 Values captured when a feature is switched on can be stale if an earlier run was closed with the feature on.
 Num0 therefore writes real defaults, whether or not the feature is on:

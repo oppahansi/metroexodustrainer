@@ -33,6 +33,13 @@ public static class Offsets
         public const nint DayEnd = 0x50;             // u64
     }
 
+    /// <summary>The hand charger (electricity_controller) that powers the flashlight and night vision.</summary>
+    public static class Charger
+    {
+        public const nint TargetVoltage = 0xB58;     // float 0..1
+        public const nint Voltage = 0xB5C;           // float 0..1
+    }
+
     /// <summary>The player's light exposure.</summary>
     public static class Stealth
     {

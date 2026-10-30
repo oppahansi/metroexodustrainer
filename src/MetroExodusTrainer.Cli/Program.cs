@@ -175,8 +175,30 @@ if (args.Length > 0 && args[0] == "inv")
     return;
 }
 
+if (args.Length > 0 && args[0] == "devices")
+{
+    using var g = GameProcess.Attach() ?? throw new InvalidOperationException("game not running");
+    nint pl = g.ReadPointer(g.ReadPointer(g.Base + Offsets.GLevel) + 0x28);
+    nint inventory = g.ReadPointer(pl + Offsets.Player.Inventory);
+    nint array = g.ReadPointer(inventory + Offsets.Inventory.AllItems);
+    ushort count = g.Read<ushort>(inventory + Offsets.Inventory.AllItems + 10);
+    for (int i = 0; i < count; i++)
+    {
+        nint e = g.ReadPointer(array + i * 8) - Offsets.Inventory.ItemOffsetInEntity;
+        long vt = g.ReadPointer(e) - g.Base;
+        string name = MetroExodusTrainer.Core.Generated.GasmaskVtables.Rvas.Contains(vt) ? "gasmask"
+            : MetroExodusTrainer.Core.Generated.ChargerVtables.Rvas.Contains(vt) ? "charger"
+            : MetroExodusTrainer.Core.Generated.NightVisionVtables.Rvas.Contains(vt) ? "nightvision"
+            : MetroExodusTrainer.Core.Generated.HellbreathVtables.Rvas.Contains(vt) ? "hellbreath" : "";
+        if (name == "") continue;
+        string F(nint o) => g.Read<float>(e + o).ToString("F3");
+        Console.WriteLine($"{name} 0x{e:X} health={F(0x3B8)} | b48={F(0xB48)} b50={F(0xB50)} b54={F(0xB54)} b58={F(0xB58)} b5c={F(0xB5C)} b60={F(0xB60)} b70={F(0xB70)}");
+    }
+    return;
+}
+
 var trainer = new Trainer();
-var featureKeys = Enumerable.Range(0, trainer.Features.Count).Select(Hotkeys.ForFeature).ToArray();
+var featureKeys = trainer.Features.Select(f => Hotkeys.ForFeature(f.Slot)).ToArray();
 var featureDown = new bool[featureKeys.Length];
 var featureDebounce = featureKeys.Select(_ => new Hotkeys.Debouncer()).ToArray();
 var resetDebounce = new Hotkeys.Debouncer();

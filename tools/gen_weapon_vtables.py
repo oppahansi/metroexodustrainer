@@ -19,6 +19,15 @@ NPC_RE = re.compile(r"^uobject_t<(\w+),\d+,\d+>::`vftable'$")
 VTABLE_RE = re.compile(r"^uobject_t<object_manager_hud<(\w+),\1_hud_item>::object_hud,\d+,\d+>::`vftable'$")
 
 
+# Device classes the trainer recognizes by vtable (name of the generated C# class -> game class).
+DEVICES = {
+    "GasmaskVtables": "gasmask",
+    "ChargerVtables": "charger",
+    "NightVisionVtables": "nightvision",
+    "HellbreathVtables": "weapon_hellbreath",
+}
+
+
 def derives_from(pdb, tid, target, depth=0):
     if depth > 12:
         return False
@@ -56,6 +65,8 @@ def main(exe, symbols, out_path):
         if tid is not None and (cls == "weapon_magazined" or derives_from(pdb, tid, "weapon_magazined")):
             rows.extend((cls, rva) for rva in rvas)
 
+    devices = {out: sorted(found.get(cls, [])) for out, cls in DEVICES.items()}
+
     npc = []
     for cls, rvas in sorted(npc_candidates.items()):
         tid = pdb.find(cls)
@@ -83,6 +94,12 @@ def main(exe, symbols, out_path):
         for cls, rva in sorted(npc, key=lambda r: r[1]):
             f.write(f"        0x{rva:X}, // {cls}\n")
         f.write("    ];\n}\n")
+        for out, rvas in devices.items():
+            f.write(f"\n/// <summary>Vtable RVAs of {DEVICES[out]} entities.</summary>\n")
+            f.write(f"public static class {out}\n{{\n    public static readonly HashSet<long> Rvas =\n    [\n")
+            for rva in rvas:
+                f.write(f"        0x{rva:X},\n")
+            f.write("    ];\n}\n")
     print(f"{len(npc)} npc vtables for {len({c for c, _ in npc})} classes")
     print(f"{len(rows)} vtables for {len({c for c, _ in rows})} classes ({len(found)} weapon-like classes seen)")
     skipped = sorted(set(found) - {c for c, _ in rows})

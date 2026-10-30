@@ -27,7 +27,7 @@ public sealed class TrainerRunner : IDisposable
     {
         Trainer = new Trainer();
         int n = Trainer.Features.Count;
-        _featureKeys = [.. Enumerable.Range(0, n).Select(Hotkeys.ForFeature)];
+        _featureKeys = [.. Trainer.Features.Select(f => Hotkeys.ForFeature(f.Slot))];
         _featureDebounce = [.. _featureKeys.Select(_ => new Hotkeys.Debouncer())];
         _featureDown = new bool[n];
     }
