@@ -40,6 +40,17 @@ public static class Offsets
     /// <summary>Default value of g_player_speed_scale observed in game (the engine initializer, not 1.0).</summary>
     public const float DefaultPlayerSpeedScale = 1.25f;
 
+    /// <summary>Inventory object and item layouts (entity = item pointer - ItemOffsetInEntity).</summary>
+    public static class Inventory
+    {
+        public const nint AllItems = 0x278;          // u_vector<inventory_item*> inside inventory_player
+        public const nint ItemOffsetInEntity = 0x620; // inventory_item subobject follows the 0x620-byte centity
+        public const nint WeaponAmmoLoaded = 0x1940; // weapon_magazined::_ammo_loaded (u32)
+        public const nint AmmoBoxValue = 0x690;      // weapon_ammo::_box_value (u16)
+        public const nint MedkitCount = 0x9D0;       // decremented by medkit::apply_medkit (u32)
+        public const nint MissileUnits = 0x190;      // missile_weapon units (u16), decremented by throw_me
+    }
+
     public static class Level
     {
         // Per-suit parameter table that serial_update_suit copies speed and jump from.
@@ -57,6 +68,7 @@ public static class Offsets
     public static class Player
     {
         public const nint Health = 0x3B8;
+        public const nint Inventory = 0x10F0;        // pointer to the player's inventory object
         public const nint StaticParams = 0x240;      // pointer to per-entity static params
         public const nint StaticBaseSpeed = 0xE04;   // float inside static params; base speed when the mod stack is empty
         public const nint SpeedModArray = 0x2548;    // pointer to vs_speed_mod entries (24 bytes: current, target, blend, ?, block*)
