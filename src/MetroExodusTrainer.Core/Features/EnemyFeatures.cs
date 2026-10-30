@@ -23,6 +23,9 @@ public sealed class LowEnemyHealth : Feature
     private long _lastScan;
     private const long ScanEveryMs = 100;
 
+    // Many human enemies sit at 1000-1001 until they act (a scripted health boost); treat that as full health too.
+    private static bool IsBoosted(float health) => health is >= 999f and <= 1002f;
+
     protected override void Apply(GameProcess game, nint player)
     {
         long now = Environment.TickCount64;
@@ -34,7 +37,7 @@ public sealed class LowEnemyHealth : Feature
         {
             if (!Npcs.IsEnemy(game, npc))
                 continue;
-            if (game.TryRead<float>(npc + Offsets.Entities.Health, out var health) && health > Low && health <= 1.5f)
+            if (game.TryRead<float>(npc + Offsets.Entities.Health, out var health) && health > Low && (health <= 1.5f || IsBoosted(health)))
                 game.Write(npc + Offsets.Entities.Health, Low);
         }
     }
