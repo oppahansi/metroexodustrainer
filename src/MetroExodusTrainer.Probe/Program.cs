@@ -38,21 +38,23 @@ static int PointerChain(GameProcess game)
 static int InventoryDump(GameProcess game)
 {
     var names = LoadVtableNames();
+    string[] interesting = ["weapon_", "medkit", "filter", "dagger", "dynamite", "decoy", "molotov", "charger", "gasmask", "torchlight"];
     string last = "";
     while (!game.HasExited)
     {
         var lines = new List<string>();
         nint player = PlayerLocator.Find(game);
         nint inventory = player == 0 ? 0 : game.ReadPointer(player + Offsets.Player.Inventory);
+        string flags = game.TryRead<uint>(game.Base + Offsets.PsActorFlags, out var f) ? $"0x{f:X}" : "-";
         if (inventory == 0)
         {
-            lines.Add("player/inventory not found");
+            lines.Add($"actor_flags={flags}  player/inventory not found");
         }
         else
         {
             nint array = game.ReadPointer(inventory + Offsets.Inventory.AllItems);
             game.TryRead<ushort>(inventory + Offsets.Inventory.AllItems + 10, out var count);
-            lines.Add($"inventory=0x{inventory:X} items={count}");
+            lines.Add($"actor_flags={flags}  items={count}");
             for (int i = 0; i < count && array != 0; i++)
             {
                 nint item = game.ReadPointer(array + i * 8);
@@ -60,24 +62,37 @@ static int InventoryDump(GameProcess game)
                     continue;
                 nint entity = item - Offsets.Inventory.ItemOffsetInEntity;
                 nint vtable = game.ReadPointer(entity);
-                string name = names.Resolve(vtable - game.Base) ?? $"vtable_rva=0x{vtable - game.Base:X}";
-                string F(nint off) => game.TryRead<uint>(entity + off, out var v) ? v.ToString() : "-";
-                lines.Add($"  [{i,2}] entity=0x{entity:X} {name,-50} loaded={F(Offsets.Inventory.WeaponAmmoLoaded)} " +
-                          $"box={F(Offsets.Inventory.AmmoBoxValue) } medkit_cnt={F(Offsets.Inventory.MedkitCount)} " +
-                          $"units={(game.TryRead<ushort>(entity + Offsets.Inventory.MissileUnits, out var u) ? u.ToString() : "-")}");
+                string name = ShortName(names.Resolve(vtable - game.Base));
+                if (name == "weapon_ammo" || !interesting.Any(name.StartsWith))
+                    continue;
+                string U(nint off) => game.TryRead<uint>(entity + off, out var v) ? v.ToString() : "-";
+                string W(nint off) => game.TryRead<ushort>(entity + off, out var v) ? v.ToString() : "-";
+                lines.Add($"  {name,-24} loaded={U(Offsets.Inventory.WeaponAmmoLoaded),-6} units={W(Offsets.Inventory.MissileUnits),-4} cnt={U(Offsets.Inventory.MedkitCount)}");
             }
         }
 
-        string text = string.Join('\n', lines);
+        string text = string.Join(Environment.NewLine, lines);
         if (text != last)
         {
-            Console.WriteLine($"\n--- {DateTime.Now:HH:mm:ss}");
+            Console.WriteLine($"--- {DateTime.Now:HH:mm:ss}");
             Console.WriteLine(text);
             last = text;
         }
-        Thread.Sleep(250);
+        Thread.Sleep(100);
     }
     return 0;
+}
+
+/// <summary>"uobject_t&lt;object_manager_hud&lt;weapon_ak74,weapon_ak74_hud_item&gt;::object_hud,1,0&gt;::`vftable'" -> "weapon_ak74".</summary>
+static string ShortName(string? full)
+{
+    if (full is null)
+        return "?";
+    int open = full.LastIndexOf('<', full.IndexOf("::object_hud", StringComparison.Ordinal) is var h and >= 0 ? h : full.Length - 1);
+    if (open < 0)
+        return full;
+    int end = full.IndexOfAny([',', '<'], open + 1);
+    return end > open ? full[(open + 1)..end] : full;
 }
 
 static VtableNames LoadVtableNames()
